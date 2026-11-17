@@ -39,10 +39,10 @@ jobs:
         env:
           TAG: ${{ github.event.release.tag_name || inputs.tag }}
         run: |
-          if git diff --quiet README.md; then echo "README links already point at $TAG"; exit 0; fi
-          git diff README.md
+          if git diff --quiet README.md README.zh-CN.md; then echo "README links already point at $TAG"; exit 0; fi
+          git diff README.md README.zh-CN.md
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "README: download links for $TAG" README.md
+          git commit -m "README: download links for $TAG" README.md README.zh-CN.md
           git pull --rebase origin main
           git push origin HEAD:main

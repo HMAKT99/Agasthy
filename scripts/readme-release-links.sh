@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # Points the README's versioned download links at a published release.
-# Usage: scripts/readme-release-links.sh v0.1.6 [README.md]
+# Usage: scripts/readme-release-links.sh v0.1.6 [README.md README.zh-CN.md ...]
 # Reads the release's asset names from $ASSETS (one per line) if set, else from `gh release view`.
 # A link is only changed when the release actually has that file, so it never points at a 404.
 set -euo pipefail
 
-tag="${1:?usage: $0 vX.Y.Z [README.md]}"
-readme="${2:-README.md}"
+tag="${1:?usage: $0 vX.Y.Z [README.md ...]}"
+shift
+readmes=("$@")
+[ ${#readmes[@]} -gt 0 ] || readmes=(README.md README.zh-CN.md)
 V='[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?'
 [[ "$tag" =~ ^v${V}$ ]] || { echo "not a version tag: $tag" >&2; exit 1; }
 v="${tag#v}"
@@ -14,7 +16,9 @@ assets="${ASSETS:-$(gh release view "$tag" --json assets -q '.assets[].name')}"
 
 point() { # asset-name  sed-pattern  replacement
   if grep -qxF "$1" <<<"$assets"; then
-    sed -E -i.bak "s#$2#$3#g" "$readme" && rm -f "$readme.bak"
+    for readme in "${readmes[@]}"; do
+      sed -E -i.bak "s#$2#$3#g" "$readme" && rm -f "$readme.bak"
+    done
   else
     echo "::warning::$tag has no $1; left that README link as it is"
   fi
