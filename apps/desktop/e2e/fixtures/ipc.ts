@@ -189,8 +189,43 @@ export async function installFixtureIpc(page: Page): Promise<void> {
       last_seen: now,
     };
     const fileB = { ...fileA, id: "ai_file:/fixture/home/GLOBAL.md", name: "GLOBAL.md", path: "/fixture/home/GLOBAL.md", attributes: { ...fileAttrs("GLOBAL.md", "x"), scope: "global", project: null } };
-    responses.list_edges = [
+    // A second agent whose usage logs are read, a remote MCP server and a cloud provider, for the Agent Map.
+    const cliAgent = {
+      ...aiTool,
+      id: "ai_tool:fixture-cli",
+      name: "Fixture CLI",
+      attributes: { ...aiTool.attributes, tool: "claude-code", vendor: "Fixture Vendor", category: "cli" },
+    };
+    const remoteMcp = {
+      id: "mcp:/fixture/home/.fixture.json#global#fixture-remote",
+      kind: "mcp_server",
+      name: "fixture-remote",
+      path: null,
+      version: null,
+      source: "ai",
+      attributes: { server: "fixture-remote", transport: "http", command: null, args: [], url: "https://mcp.example.invalid/mcp", env_names: [], config_file: "/fixture/home/.fixture.json", tool: "claude-code", scope: "global", disabled: false, fingerprint: "url:https://mcp.example.invalid/mcp" },
+      first_seen: now,
+      last_seen: now,
+    };
+    const provider = {
+      id: "ai_provider:fixture-cloud",
+      kind: "ai_provider",
+      name: "Fixture Cloud",
+      path: null,
+      version: null,
+      source: "ai",
+      attributes: { provider: "fixture-cloud", kind: "cloud", highest: "referenced", signals: [] },
+      first_seen: now,
+      last_seen: now,
+    };
+    const allEdges = [
       { id: "c1", kind: "potential_conflict", from_id: fileA.id, to_id: fileB.id, confidence: "probable", attributes: { topic: "package_manager" } },
+      { id: "m1", kind: "contains", from_id: repo.id, to_id: fileA.id, confidence: "verified", attributes: null },
+      { id: "m2", kind: "configures_tool", from_id: fileA.id, to_id: aiTool.id, confidence: "strong", attributes: null },
+      { id: "m3", kind: "configures_tool", from_id: fileB.id, to_id: cliAgent.id, confidence: "strong", attributes: null },
+      { id: "m4", kind: "uses_mcp_server", from_id: cliAgent.id, to_id: remoteMcp.id, confidence: "strong", attributes: null },
+      { id: "m5", kind: "uses_provider", from_id: cliAgent.id, to_id: provider.id, confidence: "strong", attributes: null },
+      { id: "m6", kind: "requires_runtime", from_id: repo.id, to_id: runtime.id, confidence: "verified", attributes: null },
     ];
     const candidate = {
       id: "/fixture/code/fixture-widget/node_modules",
@@ -376,8 +411,16 @@ export async function installFixtureIpc(page: Page): Promise<void> {
       model: null,
       data_sent_to: null,
     };
-    const byKind: Record<string, unknown[]> = { repository: [repo], ai_tool: [aiTool], ai_config_file: [fileA, fileB] };
+    const byKind: Record<string, unknown[]> = {
+      repository: [repo],
+      ai_tool: [aiTool, cliAgent],
+      ai_config_file: [fileA, fileB],
+      mcp_server: [remoteMcp],
+      ai_provider: [provider],
+      runtime: [runtime],
+    };
     window.__AGASTHY_TEST_IPC__ = async <T,>(cmd: string, args?: Record<string, unknown>): Promise<T> => {
+      if (cmd === "list_edges") return allEdges.filter((e) => e.kind === args?.kind) as T;
       if (cmd === "list_entities") {
         const q = (args?.query ?? {}) as { kind?: string | null };
         return (q.kind ? (byKind[q.kind] ?? []) : [repo]) as T;
