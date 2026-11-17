@@ -26,6 +26,19 @@ https://github.com/user-attachments/assets/2718c8ae-1576-4c4f-a494-646731a019fa
 
 ---
 
+## Try it with one command (no desktop app needed)
+
+Just want to see what your coding agents are running and what they cost? The command-line tool is enough:
+
+```bash
+brew install hmakt99/tap/agasthy-cli      # macOS / Linux
+agasthy agents                            # live coding-agent sessions and what they left running
+agasthy usage                             # token usage and estimated cost, last 30 days
+claude mcp add agasthy -- agasthy mcp     # let Claude Code ask about this machine (read-only)
+```
+
+`agents`, `processes`, `usage` and `telemetry` work without the desktop app. Repositories, packages and impact analysis come from the app's scans.
+
 ## Why you'll want it
 
 A developer machine holds hundreds of moving parts: cloned repositories, several copies of the same runtime, packages from six package managers, AI tools with their own configs, and now coding agents starting servers in every terminal. Nothing shows you how they connect, what they cost, or what is safe to remove. **AGASTHY reads the machine itself, links everything in one graph, and lets you act on it safely.**
