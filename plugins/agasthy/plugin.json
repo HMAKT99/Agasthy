@@ -1,0 +1,23 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "agasthy",
+  "version": "0.1.6",
+  "description": "Ask your machine with real data: repositories and uncommitted work, runtimes and packages, what breaks if you remove something, live coding-agent sessions and what they left running, processes and ports, and token usage. Read-only skill plus MCP server for AGASTHY.",
+  "author": {
+    "name": "HMAKT99",
+    "url": "https://github.com/HMAKT99"
+  },
+  "homepage": "https://github.com/HMAKT99/Agasthy",
+  "repository": "https://github.com/HMAKT99/Agasthy",
+  "license": "Apache-2.0",
+  "keywords": [
+    "developer-tools",
+    "machine",
+    "coding-agents",
+    "mcp",
+    "tokens",
+    "processes",
+    "packages",
+    "read-only"
+  ]
+}
