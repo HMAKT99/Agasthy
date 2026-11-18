@@ -18,7 +18,7 @@
 | Lint Rust | `cargo clippy --workspace --all-targets -- -D warnings` |
 | Format | `cargo fmt --all` · `pnpm format` |
 | Frontend checks | `pnpm typecheck && pnpm lint && pnpm test` |
-| UI end-to-end tests | `pnpm e2e` |
+| UI end-to-end tests | `pnpm e2e` (once before: `pnpm e2e:setup` downloads Playwright's Chromium) |
 | Regenerate TS types | `pnpm gen:types` (after changing a `#[ts(export)]` Rust type) |
 | Check TS types are current | `pnpm check:types` |
 | Release bundle (unsigned) | `pnpm build` |

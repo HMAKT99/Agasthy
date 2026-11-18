@@ -23,7 +23,7 @@ These come from the product's purpose and apply to every change:
    cargo fmt --all --check
    cargo clippy --workspace --all-targets -- -D warnings
    cargo test --workspace
-   pnpm typecheck && pnpm lint && pnpm test && pnpm e2e
+   pnpm typecheck && pnpm lint && pnpm test && pnpm e2e   # first time: pnpm e2e:setup
    pnpm check:types
    ```
 4. Update `ROADMAP.md` and `CHANGELOG.md` when user-visible behaviour changes.

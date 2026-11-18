@@ -14,6 +14,7 @@
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
     "e2e": "pnpm --filter @agasthy/desktop e2e",
+    "e2e:setup": "pnpm --filter @agasthy/desktop e2e:setup",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "gen:types": "node scripts/gen-types.mjs",
