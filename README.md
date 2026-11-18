@@ -222,7 +222,7 @@ cargo fmt --all --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
 pnpm typecheck && pnpm lint && pnpm test
-pnpm e2e                 # Playwright UI tests (uses installed Chrome locally)
+pnpm e2e                 # Playwright UI tests (first time: pnpm e2e:setup)
 pnpm check:types         # generated TS types match the Rust model
 ```
 

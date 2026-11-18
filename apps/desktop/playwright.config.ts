@@ -10,8 +10,10 @@ export default defineConfig({
   reporter: process.env.CI ? "github" : "list",
   use: {
     baseURL: "http://127.0.0.1:1420",
-    // Locally, use the installed Chrome rather than downloading a browser.
-    channel: process.env.CI ? undefined : "chrome",
+    // Playwright's own Chromium, locally as in CI. An installed Google Chrome
+    // can be far slower under automation (one release took minutes for the
+    // suite instead of seconds) and made timing-sensitive checks fail.
+    // One-time setup: `pnpm e2e:setup`.
     viewport: { width: 1320, height: 860 },
   },
   webServer: {
