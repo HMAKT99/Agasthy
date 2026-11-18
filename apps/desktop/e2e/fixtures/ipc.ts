@@ -431,6 +431,10 @@ export async function installFixtureIpc(page: Page): Promise<void> {
       if (cmd === "entity_detail" && args?.id === runtime.id) {
         return { entity: runtime, evidence: [], outgoing: [], incoming: [] } as T;
       }
+      if (cmd === "open_releases") {
+        (window as unknown as { __openedReleases?: boolean }).__openedReleases = true;
+        return null as T;
+      }
       if (cmd === "open_issue") {
         (window as unknown as { __lastIssue?: unknown }).__lastIssue = args;
         return null as T;
