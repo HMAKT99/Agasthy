@@ -112,6 +112,7 @@ pub fn run() {
             background::set_auto_refresh,
             reports::diagnostics_report,
             reports::open_issue,
+            reports::open_releases,
             reports::export_usage_csv,
         ])
         .build(tauri::generate_context!())

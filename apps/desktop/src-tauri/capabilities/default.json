@@ -58,6 +58,7 @@
     "process:allow-restart",
     "allow-diagnostics-report",
     "allow-open-issue",
+    "allow-open-releases",
     "allow-export-usage-csv"
   ]
 }

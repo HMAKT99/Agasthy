@@ -95,6 +95,8 @@ export const api = {
   diagnosticsReport: () => invoke<string>("diagnostics_report"),
   /** Opens this project's GitHub "new issue" page with the given text. */
   openIssue: (title: string, body: string) => invoke<void>("open_issue", { title, body }),
+  /** Opens AGASTHY's latest release on GitHub (for a copy that cannot update itself). */
+  openReleases: () => invoke<void>("open_releases"),
   /** Native save dialog, then writes the CSV. Resolves to the saved path, or null if cancelled. */
   exportUsageCsv: (windowDays: number) => invoke<string | null>("export_usage_csv", { windowDays }),
   scanSchedule: () => invoke<ScanSchedule>("scan_schedule"),

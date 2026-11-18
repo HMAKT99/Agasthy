@@ -21,6 +21,7 @@ use crate::state::{AppState, Inner};
 type CmdResult<T> = Result<T, String>;
 
 pub const ISSUES_URL: &str = "https://github.com/HMAKT99/Agasthy/issues/new";
+pub const RELEASES_URL: &str = "https://github.com/HMAKT99/Agasthy/releases/latest";
 const LOG_LINES: usize = 40;
 const MAX_ISSUE_BODY: usize = 6000;
 
@@ -267,6 +268,15 @@ pub fn open_issue(
     }
     app.opener()
         .open_url(url, None::<String>)
+        .map_err(|e| e.to_string())
+}
+
+/// Opens AGASTHY's latest release in the browser, for a copy that cannot
+/// update itself. A fixed URL: the page cannot choose what is opened.
+#[tauri::command]
+pub fn open_releases(app: AppHandle) -> CmdResult<()> {
+    app.opener()
+        .open_url(RELEASES_URL, None::<String>)
         .map_err(|e| e.to_string())
 }
 

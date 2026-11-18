@@ -29,6 +29,7 @@ const COMMANDS: &[&str] = &[
     "set_auto_refresh",
     "diagnostics_report",
     "open_issue",
+    "open_releases",
     "export_usage_csv",
     "processes",
     "disk_analysis",
