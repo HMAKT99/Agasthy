@@ -51,11 +51,12 @@ jobs:
             | .packages[0].identifier = "https://github.com/HMAKT99/Agasthy/releases/download/v\($v)/agasthy-mcp-\($v).mcpb"
             | .packages[0].fileSha256 = $sha' integrations/mcp/server.json > server.json
           cat server.json
-      - name: Install mcp-publisher 1.5.0 (checksum-verified)
+      # 1.5.0 asked for the OIDC audience "mcp-registry", which the registry now rejects.
+      - name: Install mcp-publisher 1.8.9 (checksum-verified)
         run: |
           set -euo pipefail
-          curl -fsSL -o p.tgz https://github.com/modelcontextprotocol/registry/releases/download/v1.5.0/mcp-publisher_linux_amd64.tar.gz
-          echo "79bbb73ba048c5906034f73ef6286d7763bd53cf368ea0b358fc593ed360cbd5  p.tgz" | sha256sum -c -
+          curl -fsSL -o p.tgz https://github.com/modelcontextprotocol/registry/releases/download/v1.8.9/mcp-publisher_linux_amd64.tar.gz
+          echo "4d527ca8f1ced0394c962dc925c2a4a4addef441cbefd62501c875e9481823a8  p.tgz" | sha256sum -c -
           tar -xzf p.tgz mcp-publisher && rm p.tgz
       - name: Publish
         run: |
