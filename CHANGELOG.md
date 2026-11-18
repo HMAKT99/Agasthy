@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-11-18
+
 - **Updates when a copy can't update itself:** if the start-up check fails for a reason other than the network (for example the app runs from the mounted DMG, a deleted folder or a read-only location), a banner now says so and opens the download page. Network failures stay quiet.
 - **"Later" on the update banner now hides it.** It did nothing before.
 - **Agent Map layout:** many projects no longer pile up in the middle; local MCP servers and models keep clear of agent labels; agents at the top are labelled above their dot; project names sit beside their dot.
