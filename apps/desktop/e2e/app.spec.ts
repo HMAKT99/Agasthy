@@ -53,8 +53,35 @@ test.describe("with the fixture backend", () => {
     await expect(page.getByRole("list", { name: "Command allowlist" }).getByRole("listitem")).toHaveText(["git"]);
   });
 
-  test("machine graph renders relationships and simulates runtime removal", async ({ page }) => {
+  test("machine graph maps agents, what leaves the machine and their work", async ({ page }) => {
     await page.goto("/#/graph");
+    await expect(page.getByText("2 agents · 1 MCP servers · 2 connections leave the machine")).toBeVisible();
+    const map = page.getByLabel("Agent map");
+    await expect(map.getByRole("button", { name: "Fixture CLI" })).toBeVisible();
+    await expect(map.getByRole("button", { name: "fixture-remote, outside this machine" })).toBeVisible();
+    // Usage logs put the CLI agent's tokens on the project it worked in.
+    await expect(map.getByText("2.1M tokens", { exact: true })).toBeVisible();
+
+    await map.getByRole("button", { name: "Fixture CLI" }).click();
+    const details = page.getByRole("complementary", { name: "Details" });
+    await expect(details.getByRole("heading", { name: "Fixture CLI" })).toBeVisible();
+    await expect(details.getByText("mcp.example.invalid").first()).toBeVisible();
+    const brief = details.locator("pre");
+    await expect(brief).toContainText("# Briefing: Fixture CLI in fixture-widget");
+    await expect(brief).toContainText("- Node.js 22.0.0");
+    await expect(brief).toContainText("- fixture-remote: remote, mcp.example.invalid  (data leaves this machine)");
+
+    // Filters re-draw the map.
+    await page.getByRole("button", { name: "All agents" }).click();
+    await page.getByRole("menu").getByText("Fixture CLI").click();
+    await page.keyboard.press("Escape");
+    await expect(map.getByRole("button", { name: "Fixture CLI" })).toHaveCount(0);
+    await expect(map.getByRole("button", { name: "fixture-remote, outside this machine" })).toHaveCount(0);
+    await expect(map.getByRole("button", { name: "Fixture Assistant" })).toBeVisible();
+  });
+
+  test("machine graph deep dive renders relationships and simulates runtime removal", async ({ page }) => {
+    await page.goto("/#/graph?view=focus&focus=repository%3A%2Ffixture%2Fcode%2Ffixture-widget");
     const canvas = page.getByLabel("Graph canvas");
     await expect(canvas.getByText("fixture-widget")).toBeVisible();
     await expect(canvas.getByText("fixture-lib")).toBeVisible();

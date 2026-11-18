@@ -46,16 +46,18 @@ const graphRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/graph",
   validateSearch: (s: Record<string, unknown>): GraphSearch => {
-    const modes: GraphMode[] = ["projects", "software", "ai", "focus"];
     const focus = typeof s.focus === "string" && s.focus ? s.focus : undefined;
-    let view = modes.includes(s.view as GraphMode) ? (s.view as GraphMode) : "projects";
-    if (view === "focus" && !focus) view = "projects";
+    // Older links used "projects", "software" or "ai"; they all open the map now.
+    const view: GraphMode = s.view === "focus" && focus ? "focus" : "map";
     const depth = Number(s.depth);
+    const days = Number(s.days);
     return {
       view,
       focus,
       depth: depth >= 1 && depth <= 3 ? Math.floor(depth) : 1,
       sel: typeof s.sel === "string" && s.sel ? s.sel : undefined,
+      around: typeof s.around === "string" && s.around ? s.around : undefined,
+      days: [7, 30, 90].includes(days) ? days : undefined,
     };
   },
   component: GraphPage,

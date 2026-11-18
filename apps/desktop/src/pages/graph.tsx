@@ -17,6 +17,7 @@ import {
 import {
   AppWindow,
   Bot,
+  ArrowLeft,
   Box,
   Brain,
   Cloud,
@@ -28,27 +29,32 @@ import {
   Crosshair,
   FolderGit2,
   Globe,
-  Layers,
   Package,
   Search,
   Terminal,
 } from "lucide-react";
 import { useEffect, useState, type ComponentType } from "react";
+import { AgentMapView } from "../components/agent-map-view";
 import { RuntimeImpact } from "../components/impact";
 import { PageHeader } from "../components/page";
 import { NODE_HEIGHT, NODE_WIDTH, layoutGraph } from "../lib/graph-layout";
 import { api, errorMessage } from "../lib/ipc";
-import { useGraphNeighborhood, useGraphOverview, useOverview, useSharedDependencies } from "../lib/queries";
+import { useGraphNeighborhood, useSharedDependencies } from "../lib/queries";
 import { KIND_LABEL } from "./discovery";
 import { EntityDetailPanel } from "./entity-detail";
 
-export type GraphMode = "projects" | "software" | "ai" | "focus";
+/** `map`: the Agent Map. `focus`: every recorded relationship around one thing. */
+export type GraphMode = "map" | "focus";
 
 export interface GraphSearch {
   view: GraphMode;
   focus?: string;
   depth: number;
   sel?: string;
+  /** Agent Map: show only what this thing involves. */
+  around?: string;
+  /** Agent Map: days of token usage to draw as work. */
+  days?: number;
 }
 
 export const KIND_STYLE: Record<EntityKind, { color: string; icon: ComponentType<{ className?: string }> }> = {
@@ -285,94 +291,88 @@ function SidePanel({ onFocus }: { onFocus: (id: string) => void }) {
 export function GraphPage() {
   const search = useSearch({ from: "/graph" });
   const nav = useNavigate({ from: "/graph" });
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      {search.view === "focus" && search.focus ? (
+        <ConnectionsView
+          search={search}
+          onBack={() => void nav({ search: (s) => ({ ...s, view: "map", focus: undefined }) })}
+        />
+      ) : (
+        <AgentMapView
+          selected={search.sel ?? null}
+          around={search.around ?? null}
+          days={search.days ?? 30}
+          onChange={(next) => void nav({ search: (s) => ({ ...s, ...next }), replace: true })}
+          onExplore={(id) => void nav({ search: (s) => ({ ...s, view: "focus", focus: id, sel: id, depth: 1 }) })}
+        />
+      )}
+    </div>
+  );
+}
+
+/** Every recorded relationship around one thing, as a node graph: the deep dive behind the Agent Map. */
+function ConnectionsView({ search, onBack }: { search: GraphSearch; onBack: () => void }) {
+  const nav = useNavigate({ from: "/graph" });
   const [kinds, setKinds] = useState<EntityKind[]>([]);
-  const overviewStats = useOverview();
-  const mode = search.view;
-  const overview = useGraphOverview(mode === "software" ? "software" : mode === "ai" ? "ai" : "projects", mode !== "focus");
-  const focus = useGraphNeighborhood(mode === "focus" ? (search.focus ?? null) : null, search.depth, kinds);
-  const q = mode === "focus" ? focus : overview;
+  const q = useGraphNeighborhood(search.focus ?? null, search.depth, kinds);
   const view = q.data;
   const selected = search.sel ?? null;
   const flow = view ? toFlow(view, selected) : null;
+  const center = view?.nodes.find((n) => n.id === view.center);
 
   const setFocus = (id: string) => void nav({ search: (s) => ({ ...s, view: "focus", focus: id, sel: id }) });
   const select = (id: string | undefined) => void nav({ search: (s) => ({ ...s, sel: id }), replace: true });
-  const repoCount = overviewStats.data?.counts.find((c) => c.kind === "repository")?.count ?? 0;
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <>
       <PageHeader
         title="Machine Graph"
-        subtitle={view ? `${view.nodes.length} nodes · ${view.edges.length} relationships${view.truncated ? " · limited" : ""}` : undefined}
+        subtitle={view ? `All connections${center ? ` of ${center.name}` : ""} · ${view.nodes.length} nodes · ${view.edges.length} relationships${view.truncated ? " · limited" : ""}` : undefined}
       />
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-line px-5 py-2.5">
-        <div className="flex items-center gap-1" role="tablist" aria-label="Graph view">
-          {(
-            [
-              ["projects", "Projects", Layers],
-              ["software", "Installed software", Package],
-              ["ai", "AI ecosystem", Bot],
-              ["focus", "Focus", Crosshair],
-            ] as const
-          ).map(([id, label, Icon]) => (
-            <button
-              key={id}
-              role="tab"
-              aria-selected={mode === id}
-              disabled={id === "focus" && !search.focus}
-              onClick={() => void nav({ search: (s) => ({ ...s, view: id, sel: undefined }) })}
-              className={cn(
-                "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-[12.5px] transition-colors disabled:opacity-40",
-                mode === id ? "bg-hover text-fg" : "text-muted hover:text-fg",
-              )}
-            >
-              <Icon className="size-3.5" aria-hidden /> {label}
-            </button>
-          ))}
-        </div>
+        <Button size="sm" variant="ghost" onClick={onBack}>
+          <ArrowLeft aria-hidden /> Agent map
+        </Button>
         <NodeSearch onPick={setFocus} />
-        {mode === "focus" ? (
-          <>
-            <label className="flex items-center gap-1.5 text-[12px] text-muted">
-              Depth
-              <select
-                value={search.depth}
-                onChange={(e) => void nav({ search: (s) => ({ ...s, depth: Number(e.target.value) }) })}
-                className="h-7 rounded-md border border-line bg-surface px-1.5 text-[12px] text-fg"
+        <label className="flex items-center gap-1.5 text-[12px] text-muted">
+          Depth
+          <select
+            value={search.depth}
+            onChange={(e) => void nav({ search: (s) => ({ ...s, depth: Number(e.target.value) }) })}
+            className="h-7 rounded-md border border-line bg-surface px-1.5 text-[12px] text-fg"
+          >
+            {[1, 2, 3].map((d) => (
+              <option key={d} value={d}>
+                {d}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="flex flex-wrap items-center gap-1">
+          {FILTERABLE.map((k) => {
+            const on = kinds.length === 0 || kinds.includes(k);
+            return (
+              <button
+                key={k}
+                onClick={() =>
+                  setKinds((cur) => {
+                    const base = cur.length === 0 ? FILTERABLE : cur;
+                    const next = base.includes(k) ? base.filter((x) => x !== k) : [...base, k];
+                    return next.length === FILTERABLE.length ? [] : next;
+                  })
+                }
+                aria-pressed={on}
+                className={cn(
+                  "h-6 rounded-full border px-2 text-[11px] transition-colors",
+                  on ? "border-line text-fg" : "border-line text-faint line-through opacity-60",
+                )}
               >
-                {[1, 2, 3].map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="flex flex-wrap items-center gap-1">
-              {FILTERABLE.map((k) => {
-                const on = kinds.length === 0 || kinds.includes(k);
-                return (
-                  <button
-                    key={k}
-                    onClick={() =>
-                      setKinds((cur) => {
-                        const base = cur.length === 0 ? FILTERABLE : cur;
-                        const next = base.includes(k) ? base.filter((x) => x !== k) : [...base, k];
-                        return next.length === FILTERABLE.length ? [] : next;
-                      })
-                    }
-                    aria-pressed={on}
-                    className={cn(
-                      "h-6 rounded-full border px-2 text-[11px] transition-colors",
-                      on ? "border-line text-fg" : "border-line text-faint line-through opacity-60",
-                    )}
-                  >
-                    {KIND_LABEL[k].short}
-                  </button>
-                );
-              })}
-            </div>
-          </>
-        ) : null}
+                {KIND_LABEL[k].short}
+              </button>
+            );
+          })}
+        </div>
         {view?.truncated ? <Badge tone="warning">Showing the first {view.nodes.length} nodes</Badge> : null}
       </div>
       <div className="flex min-h-0 flex-1">
@@ -382,10 +382,10 @@ export function GraphPage() {
           ) : q.error ? (
             <StateView kind="error" title="Could not build the graph" description={errorMessage(q.error)} />
           ) : !view || view.nodes.length === 0 ? (
-            <EmptyGraph mode={mode} repoCount={repoCount} />
+            <StateView kind="empty" title="Nothing to show" description="This node has no recorded relationships." />
           ) : flow ? (
             <ReactFlow
-              key={`${mode}:${search.focus ?? ""}:${search.depth}:${kinds.join(",")}`}
+              key={`${search.focus ?? ""}:${search.depth}:${kinds.join(",")}`}
               nodes={flow.nodes}
               edges={flow.edges}
               nodeTypes={nodeTypes}
@@ -429,41 +429,6 @@ export function GraphPage() {
           <SidePanel onFocus={setFocus} />
         )}
       </div>
-    </div>
+    </>
   );
 }
-
-function EmptyGraph({ mode, repoCount }: { mode: GraphMode; repoCount: number }) {
-  const nav = useNavigate();
-  if (mode === "projects" && repoCount === 0)
-    return (
-      <StateView
-        kind="empty"
-        title="No projects to graph yet"
-        description="The Projects graph links your repositories to the runtimes and dependencies they declare. Add a project folder and run a repository scan."
-        action={
-          <Button variant="primary" onClick={() => void nav({ to: "/settings" })}>
-            Choose folders
-          </Button>
-        }
-      />
-    );
-  if (mode === "ai")
-    return (
-      <StateView
-        kind="empty"
-        title="No AI ecosystem data yet"
-        description="Run the AI ecosystem scan from the AI Ecosystem page to map assistants, providers, MCP servers and instruction files."
-      />
-    );
-  if (mode === "software")
-    return (
-      <StateView
-        kind="empty"
-        title="No installed-software relationships yet"
-        description="Run Scan installed software to link package managers, packages, binaries and applications."
-      />
-    );
-  return <StateView kind="empty" title="Nothing to show" description="This node has no recorded relationships." />;
-}
-

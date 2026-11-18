@@ -1,4 +1,4 @@
-import type { EntityKind, OverviewKind, ScanKind } from "@agasthy/shared-types";
+import type { Edge, Entity, EntityKind, OverviewKind, ScanKind } from "@agasthy/shared-types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./ipc";
 
@@ -63,6 +63,25 @@ export const useGraphNeighborhood = (center: string | null, depth: number, kinds
     queryFn: () => api.graphNeighborhood(center as string, depth, kinds),
     enabled: Boolean(center),
   });
+
+/** Entities and relationships the Agent Map is drawn from, in one query. */
+export const useAgentMapData = () =>
+  useQuery({
+    queryKey: [...keys.graph, "agent-map"],
+    queryFn: async () => {
+      const kinds: EntityKind[] = ["repository", "ai_tool", "ai_config_file", "mcp_server", "ai_provider", "local_model", "runtime"];
+      const rels = ["contains", "configures_tool", "declares_mcp_server", "uses_mcp_server", "uses_provider", "serves_model", "requires_runtime"] as const;
+      const [entities, edges] = await Promise.all([
+        Promise.all(kinds.map((kind) => api.listEntities({ kind, text: null, limit: 5000, offset: null }))),
+        Promise.all(rels.map((kind) => api.listEdges(kind).then((es) => es.filter((e) => e.kind === kind)))),
+      ]);
+      return { entities: entities.flat() as Entity[], edges: edges.flat() as Edge[] };
+    },
+  });
+
+/** Agents' token logs for the last `days` days. Shares its cache with the Token Usage page. */
+export const useAgentUsage = (days: number) =>
+  useQuery({ queryKey: ["agent-usage", days], queryFn: () => api.agentUsage(days), refetchInterval: 30_000 });
 
 export const useRuntimeImpact = (id: string | null) =>
   useQuery({ queryKey: keys.impact(id ?? ""), queryFn: () => api.runtimeImpact(id as string), enabled: Boolean(id) });

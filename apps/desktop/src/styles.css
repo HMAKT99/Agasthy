@@ -135,3 +135,19 @@ dd {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* Agent Map: data crossing the edge of the machine. */
+.agent-map-flow {
+  stroke-dasharray: 3 8;
+  animation: agent-map-flow 1.1s linear infinite;
+}
+@keyframes agent-map-flow {
+  to {
+    stroke-dashoffset: -11;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .agent-map-flow {
+    animation: none;
+  }
+}
