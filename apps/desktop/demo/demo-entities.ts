@@ -201,8 +201,8 @@ export function buildDemoExtras(now: number): DemoExtras {
     tool("gemini-cli", "Gemini CLI", "Google", "cli", "/opt/homebrew/bin/gemini"),
     tool("cursor", "Cursor", "Anysphere", "ide", "/Applications/Cursor.app"),
     tool("claude-desktop", "Claude (desktop app)", "Anthropic", "desktop_app", "/Applications/Claude.app"),
-    tool("ollama", "Ollama", "Ollama", "local_engine", "/Applications/Ollama.app", "127.0.0.1:11434"),
-    tool("lmstudio", "LM Studio", "Element Labs", "local_engine", "/Applications/LM Studio.app"),
+    tool("ollama", "Ollama", "Ollama", "local_inference", "/Applications/Ollama.app", "127.0.0.1:11434"),
+    tool("lmstudio", "LM Studio", "Element Labs", "local_inference", "/Applications/LM Studio.app"),
     tool("hermes", "Hermes Agent", "Nous Research", "cli", `${home}/.local/bin/hermes`),
   ];
   const provider = (id: string, name: string, kind: string, highest: AiProviderAttrs["highest"], source: string, detail: string) => {
@@ -300,6 +300,27 @@ export function buildDemoExtras(now: number): DemoExtras {
     edge("potential_conflict", `ai_file:${code}/acme-web/CLAUDE.md`, `ai_file:${code}/acme-web/AGENTS.md`, { topic: "package_manager" }),
     edge("same_content", `ai_file:${code}/payments-api/CLAUDE.md`, `ai_file:${code}/payments-api/AGENTS.md`),
   ];
+  // What the Agent Map draws: projects hold files, files configure agents,
+  // agents call MCP servers and send to providers, local engines serve models.
+  const strong = (kind: Edge["kind"], from: string, to: string): Edge => ({ ...edge(kind, from, to), confidence: "strong" });
+  for (const f of files) {
+    const a = f.attributes as unknown as AiConfigFileAttrs;
+    if (a.project) edges.push({ ...edge("contains", `repository:${a.project}`, f.id), confidence: "verified" });
+    for (const t of a.tools) edges.push(strong("configures_tool", f.id, `ai_tool:${t}`));
+  }
+  for (const s of mcpServers) edges.push(strong("uses_mcp_server", `ai_tool:${(s.attributes as unknown as McpServerAttrs).tool}`, s.id));
+  const sends: [string, string][] = [
+    ["claude-code", "anthropic"],
+    ["claude-desktop", "anthropic"],
+    ["codex", "openai"],
+    ["cursor", "anthropic"],
+    ["cursor", "openai"],
+    ["gemini-cli", "google"],
+    ["hermes", "anthropic"],
+    ["hermes", "ollama"],
+  ];
+  for (const [t, p] of sends) edges.push(strong("uses_provider", `ai_tool:${t}`, `ai_provider:${p}`));
+  for (const m of models) edges.push(strong("serves_model", `ai_tool:${(m.attributes as unknown as LocalModelAttrs).store}`, m.id));
 
   // ---------- security ----------
   const finding = (id: string, category: string, severity: FindingAttrs["severity"], summary: string, pkgs: string[], fixed: string[], remediation: string) => {

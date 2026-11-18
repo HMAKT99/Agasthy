@@ -171,6 +171,31 @@ describe("layout", () => {
   });
 });
 
+describe("layout when crowded", () => {
+  const angleGap = (a: number, b: number) => {
+    const d = Math.abs(a - b) % (2 * Math.PI);
+    return Math.min(d, 2 * Math.PI - d);
+  };
+
+  it("keeps many projects apart, and local things clear of the agents", () => {
+    const repos = Array.from({ length: 9 }, (_, i) => ent(`repository:/u/p${i}`, "repository", `p${i}`, {}, `/u/p${i}`));
+    const tools = ["a", "b", "c"].map((t) => ent(`ai_tool:${t}`, "ai_tool", t, { tool: t, installed: true }));
+    const servers = ["s1", "s2"].map((s) => ent(`mcp:${s}`, "mcp_server", s, { transport: "stdio", command: "node" }));
+    const crowded = buildAgentMap({
+      entities: [...repos, ...tools, ...servers],
+      edges: [...servers.map((s) => edge("ai_tool:a", s.id, "uses_mcp_server"))],
+      // Every project leans towards the same agent, which used to pile them up.
+      sessions: repos.map((r) => session("a", r.path!, 100)),
+    });
+    const v = visibleIds(crowded, DEFAULT_FILTER);
+    const p = layout(crowded, v, 0, 0, 400);
+    const ra = repos.map((r) => p.get(r.id)!.angle);
+    for (let i = 0; i < ra.length; i++) for (let j = i + 1; j < ra.length; j++) expect(angleGap(ra[i], ra[j])).toBeGreaterThan(0.5);
+    const agentA = p.get("ai_tool:a")!.angle;
+    for (const s of servers) expect(angleGap(p.get(s.id)!.angle, agentA)).toBeGreaterThan(0.14);
+  });
+});
+
 describe("layout with one agent", () => {
   it("spreads each ring around the whole circle instead of piling things up", () => {
     const v = visibleIds(m, { ...DEFAULT_FILTER, around: "ai_tool:claude-code" });

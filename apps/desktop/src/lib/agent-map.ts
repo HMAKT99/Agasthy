@@ -136,7 +136,7 @@ export function agentForUsage(agent: string, tools: MapNode[]): MapNode | undefi
     codex: ["codex-cli", "codex-app"],
     "copilot-cli": ["copilot-cli", "github-copilot-cli"],
   };
-  const ids = candidates[agent] ?? [agent];
+  const ids = [...(candidates[agent] ?? []), agent];
   const matching = ids.map((id) => tools.find((t) => t.toolId === id)).filter((t): t is MapNode => Boolean(t));
   return matching.find((t) => t.installed) ?? matching[0];
 }
@@ -322,14 +322,18 @@ const meanAngle = (as: number[]): number | null =>
 /**
  * Spread items around a ring, near the angles they want, at least `gap`
  * apart. When none of them wants an angle, they share the whole ring evenly,
- * starting at `start`.
+ * starting at `start`. A crowded ring gets even slots in the order the items
+ * want. `pinned` angles (things on a neighbouring ring) are kept clear of but
+ * never moved.
  */
-function spread(ids: string[], want: Map<string, number | null>, gap: number, start = -Math.PI / 2): Map<string, number> {
-  const g = Math.min(gap, (2 * Math.PI) / Math.max(ids.length, 1) * 0.95);
+function spread(ids: string[], want: Map<string, number | null>, gap: number, start = -Math.PI / 2, pinned: number[] = [], pinGap = gap): Map<string, number> {
+  const TAU = 2 * Math.PI;
+  const total = ids.length + pinned.length;
+  const g = Math.min(gap, (TAU / Math.max(total, 1)) * 0.95);
   const free = ids.filter((id) => want.get(id) == null);
   const a = new Map<string, number>();
-  if (free.length === ids.length) {
-    [...ids].sort().forEach((id, i) => a.set(id, start + (i * 2 * Math.PI) / ids.length));
+  if (free.length === ids.length && !pinned.length) {
+    [...ids].sort().forEach((id, i) => a.set(id, start + (i * TAU) / ids.length));
     return a;
   }
   ids.forEach((id) => {
@@ -337,24 +341,42 @@ function spread(ids: string[], want: Map<string, number | null>, gap: number, st
     if (w != null) a.set(id, w);
   });
   free.forEach((id, i) => a.set(id, Math.PI / 2 + (i - (free.length - 1) / 2) * g));
-  const order = [...ids].sort((x, y) => a.get(x)! - a.get(y)! || x.localeCompare(y));
-  for (let pass = 0; pass < 80; pass++) {
+  const norm = (x: number) => ((x % TAU) + TAU) % TAU;
+  if (!pinned.length && ids.length * gap >= TAU * 0.95) {
+    const order = [...ids].sort((x, y) => norm(a.get(x)!) - norm(a.get(y)!) || x.localeCompare(y));
+    const step = TAU / ids.length;
+    const rot = meanAngle(order.map((id, i) => a.get(id)! - i * step)) ?? start;
+    order.forEach((id, i) => a.set(id, rot + i * step));
+    return a;
+  }
+  const pins = pinned.map((_, i) => `\u0000pin${i}`);
+  pins.forEach((p, i) => a.set(p, pinned[i]));
+  const isPin = (id: string) => id.startsWith("\u0000pin");
+  for (const id of [...ids, ...pins]) a.set(id, norm(a.get(id)!));
+  const all = [...ids, ...pins];
+  for (let pass = 0; pass < 200; pass++) {
+    const order = [...all].sort((x, y) => a.get(x)! - a.get(y)! || x.localeCompare(y));
     let moved = false;
-    for (let i = 0; i < order.length; i++) {
+    for (let i = 0; i < order.length && order.length > 1; i++) {
       const cur = order[i];
       const next = order[(i + 1) % order.length];
-      if (order.length < 2) break;
       let d = a.get(next)! - a.get(cur)!;
-      if (i === order.length - 1) d += 2 * Math.PI;
-      if (d < g) {
-        const s = (g - d) / 2;
-        a.set(cur, a.get(cur)! - s);
-        a.set(next, a.get(next)! + s);
-        moved = true;
+      if (i === order.length - 1) d += TAU;
+      const minGap = isPin(cur) || isPin(next) ? Math.max(g, Math.min(pinGap, (TAU / Math.max(total, 1)) * 1.5)) : g;
+      if (d >= minGap - 1e-9) continue;
+      const need = minGap - d;
+      if (isPin(cur) && isPin(next)) continue;
+      if (isPin(cur)) a.set(next, norm(a.get(next)! + need));
+      else if (isPin(next)) a.set(cur, norm(a.get(cur)! - need));
+      else {
+        a.set(cur, norm(a.get(cur)! - need / 2));
+        a.set(next, norm(a.get(next)! + need / 2));
       }
+      moved = true;
     }
     if (!moved) break;
   }
+  pins.forEach((p) => a.delete(p));
   return a;
 }
 
@@ -372,13 +394,15 @@ export function layout(m: AgentMap, visible: Set<string>, cx: number, cy: number
     const y = m.nodes.get(b)!;
     return (x.vendor ?? "").localeCompare(y.vendor ?? "") || x.name.localeCompare(y.name);
   });
-  agents.forEach((id, i) => angle.set(id, -Math.PI / 2 + (i * 2 * Math.PI) / Math.max(agents.length, 1)));
+  // Half a step off the top, so no agent's label sits on the boundary's caption.
+  const step = (2 * Math.PI) / Math.max(agents.length, 1);
+  agents.forEach((id, i) => angle.set(id, -Math.PI / 2 + (agents.length > 1 ? step / 2 : 0) + i * step));
   // With one agent everything would lean the same way and pile up, so each ring shares the whole circle instead.
   const toward = (ids: string[]) => (agents.length < 2 ? null : meanAngle(ids.filter((x) => angle.has(x)).map((x) => angle.get(x)!)));
 
   const files = list(["ai_config_file"]);
   const fileWant = new Map(files.map((id) => [id, toward(out(m, id, "configures_tool").map((n) => n.id))]));
-  spread(files, fileWant, 0.16, -Math.PI / 2 + 0.3).forEach((a, id) => angle.set(id, a));
+  spread(files, fileWant, 0.2, -Math.PI / 2 + 0.3).forEach((a, id) => angle.set(id, a));
 
   // Local MCP servers, local models and local providers (such as Ollama) sit inside the edge.
   const inner = list(["mcp_server", "local_model", "ai_provider"], (n) => !n.outside);
@@ -388,7 +412,7 @@ export function layout(m: AgentMap, visible: Set<string>, cx: number, cy: number
       toward([...inc(m, id, "uses_mcp_server"), ...inc(m, id, "serves_model"), ...inc(m, id, "uses_provider")].map((n) => n.id)),
     ]),
   );
-  spread(inner, innerWant, 0.15, -Math.PI / 2 + 0.6).forEach((a, id) => angle.set(id, a));
+  spread(inner, innerWant, 0.15, -Math.PI / 2 + 0.6, agents.length > 1 ? agents.map((id) => angle.get(id)!) : [], 0.26).forEach((a, id) => angle.set(id, a));
 
   const outer = list(["mcp_server", "ai_provider"], (n) => n.outside);
   const outerWant = new Map(outer.map((id) => [id, toward([...inc(m, id, "uses_mcp_server"), ...inc(m, id, "uses_provider")].map((n) => n.id))]));
@@ -403,8 +427,10 @@ export function layout(m: AgentMap, visible: Set<string>, cx: number, cy: number
   );
   spread(repos, repoWant, repos.length > 1 ? (2 * Math.PI) / repos.length : 1).forEach((a, id) => angle.set(id, a));
 
+  // Many projects need a wider middle ring to keep their names apart.
+  const repoRing = Math.min(0.27, Math.max(RING.repo, 0.12 + 0.02 * repos.length));
   const ringOf = (n: MapNode) =>
-    n.kind === "repository" ? RING.repo : n.kind === "ai_config_file" ? RING.file : n.kind === "ai_tool" ? RING.agent : n.outside ? RING.out : RING.inner;
+    n.kind === "repository" ? repoRing : n.kind === "ai_config_file" ? RING.file : n.kind === "ai_tool" ? RING.agent : n.outside ? RING.out : RING.inner;
   const placed = new Map<string, Placed>();
   for (const id of visible) {
     const n = m.nodes.get(id);
