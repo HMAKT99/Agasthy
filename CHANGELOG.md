@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+- **First run:** a new install opens with "Let AGASTHY look at this machine" at the top of the Overview. One click scans installed software, packages and the AI setup (agents, MCP servers, instruction files), and project folders too if you've added any, so the Agent Map and AI pages fill in straight away.
+
 ## [0.1.8] - 2026-11-18
 
 - **Updates when a copy can't update itself:** if the start-up check fails for a reason other than the network (for example the app runs from the mounted DMG, a deleted folder or a read-only location), a banner now says so and opens the download page. Network failures stay quiet.
