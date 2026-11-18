@@ -186,12 +186,15 @@ export function AgentMapCanvas({
     const on = isOn(n.id);
     const rr = RADIUS[n.kind];
     const isSel = n.id === selected;
-    const center = n.kind === "repository" || n.kind === "ai_tool";
+    // Agents, and a lone project in the middle, are labelled under the dot; everything else to the side, away from its neighbours.
+    const center = n.kind === "ai_tool" || (n.kind === "repository" && Math.hypot(p.x - cx, p.y - cy) < 1);
     const right = Math.cos(p.angle) >= -0.05;
-    const showLabel = n.kind !== "ai_config_file" || fileCount <= 14 || (lit?.has(n.id) ?? false);
+    const showLabel = n.kind !== "ai_config_file" || fileCount <= 8 || (lit?.has(n.id) ?? false);
     const label = truncate(n.kind === "ai_config_file" ? n.label : n.label, n.kind === "ai_config_file" ? 26 : 22);
     const tx = center ? p.x : p.x + (right ? rr + 6 : -rr - 6);
-    const ty = center ? p.y + rr + 15 : p.y + 4;
+    // Agents in the top half label upwards, away from the files inside them.
+    const above = n.kind === "ai_tool" && Math.sin(p.angle) < -0.2;
+    const ty = above ? p.y - rr - 20 : center ? p.y + rr + 15 : p.y + 4;
     const work = n.kind === "repository" && lens.work ? map.work.filter((w) => w.repo === n.id && (!active || active === n.id || w.agent === active)) : [];
     const workTotal = work.reduce((s, w) => s + w.tokens, 0);
     const onKey = (e: KeyboardEvent) => {
@@ -237,7 +240,7 @@ export function AgentMapCanvas({
             textAnchor={center ? "middle" : right ? "start" : "end"}
             fill={n.kind === "ai_config_file" ? "var(--muted)" : "var(--fg)"}
             fontSize={n.kind === "ai_config_file" ? 10.5 : 12}
-            fontWeight={center ? 600 : 400}
+            fontWeight={center || n.kind === "repository" ? 600 : 400}
            
           >
             {label}
@@ -249,7 +252,7 @@ export function AgentMapCanvas({
           </text>
         ) : null}
         {workTotal > 0 ? (
-          <text x={tx} y={ty + 13} textAnchor="middle" fill="var(--accent)" fontSize={10.5} fontWeight={600}>
+          <text x={tx} y={ty + 13} textAnchor={center ? "middle" : right ? "start" : "end"} fill="var(--accent)" fontSize={10.5} fontWeight={600}>
             {formatTokens(workTotal)} tokens
           </text>
         ) : null}

@@ -5,6 +5,8 @@
  *
  * Output: docs/screenshots/*.png (framed like a macOS window), plus unframed
  * captures in apps/demo-video/public/shots for the demo video (pnpm demo:video).
+ *
+ *   SHOTS=graph,usage pnpm screenshots   (only these; the rest are left as they are)
  */
 import { type Page, expect, test } from "@playwright/test";
 import { copyFileSync, mkdirSync, readFileSync, readdirSync, rmSync } from "node:fs";
@@ -18,6 +20,9 @@ const raw = join(here, "out");
 
 test.describe.configure({ mode: "serial" });
 
+const only = process.env.SHOTS ? new Set(process.env.SHOTS.split(",").map((x) => x.trim())) : null;
+const wanted = (name: string) => !only || only.has(name);
+
 async function settle(page: Page) {
   await page.waitForLoadState("networkidle");
   await page.evaluate(() => document.fonts.ready);
@@ -27,6 +32,7 @@ async function settle(page: Page) {
 }
 
 async function shot(page: Page, name: string) {
+  if (!wanted(name)) return;
   await settle(page);
   await page.screenshot({ path: join(raw, `${name}.png`) });
 }
@@ -87,7 +93,7 @@ test("capture pages", async ({ page }) => {
   await shot(page, "review");
 
   await page.goto("/#/graph");
-  await page.waitForTimeout(1200);
+  await expect(page.getByRole("button", { name: "Claude Code", exact: true })).toBeVisible();
   await shot(page, "graph");
 
   await page.goto("/#/storage");
@@ -126,12 +132,12 @@ test("capture dark hero", async ({ browser }) => {
 
 test("frame screenshots and keep raw captures for the video", async ({ browser }) => {
   const page = await (await browser.newContext({ deviceScaleFactor: 2 })).newPage();
-  for (const n of ["overview", "agents", "agents-expanded", "usage", "operator", "review", "graph", "storage", "discovery", "discovery-tools", "ai-ecosystem", "ai-instructions", "processes", "security", "impact", "snapshots"]) await frame(page, n);
-  await frame(page, "agents-dark", true);
+  for (const n of ["overview", "agents", "agents-expanded", "usage", "operator", "review", "graph", "storage", "discovery", "discovery-tools", "ai-ecosystem", "ai-instructions", "processes", "security", "impact", "snapshots"].filter(wanted)) await frame(page, n);
+  if (wanted("agents-dark")) await frame(page, "agents-dark", true);
 
   // Unframed captures for the demo video (apps/demo-video/public/shots).
   const shots = join(here, "../../demo-video/public/shots");
-  rmSync(shots, { recursive: true, force: true });
+  if (!only) rmSync(shots, { recursive: true, force: true });
   mkdirSync(shots, { recursive: true });
   for (const f of readdirSync(raw).filter((x) => x.endsWith(".png"))) copyFileSync(join(raw, f), join(shots, f));
   rmSync(raw, { recursive: true, force: true });

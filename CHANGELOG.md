@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+- **Agent Map layout:** many projects no longer pile up in the middle; local MCP servers and models keep clear of agent labels; agents at the top are labelled above their dot; project names sit beside their dot.
+
 ## [0.1.7] - 2026-11-18
 
 - **Machine Graph is now the Agent Map:** your machine drawn from the agents' side. Projects in the middle, then the instruction and config files in them, the agents that read those files, and the MCP servers, models and providers they use. A boundary marks the edge of the machine, and connections that cross it (cloud providers, remote MCP servers) are drawn in orange.

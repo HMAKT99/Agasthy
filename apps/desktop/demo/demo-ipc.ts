@@ -7,13 +7,16 @@
  * on every run and contain no data from a real machine. Never bundled into the app.
  */
 import type { Page } from "@playwright/test";
+import { readFileSync } from "node:fs";
 import { buildDemoExtras, type DemoExtras } from "./demo-entities";
 
 export async function installDemoIpc(page: Page): Promise<void> {
   // Passed as plain JSON; typed again inside (Playwright's argument typing cannot handle this shape).
-  const payload: unknown = JSON.parse(JSON.stringify(buildDemoExtras(Date.now())));
+  // The sidebar shows the version being documented, not a stale one.
+  const appVersion: string = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).version;
+  const payload: unknown = JSON.parse(JSON.stringify({ ...buildDemoExtras(Date.now()), appVersion }));
   await page.addInitScript((arg: unknown) => {
-    const extras = arg as DemoExtras;
+    const extras = arg as DemoExtras & { appVersion: string };
     const now = Date.now();
     const H = 3_600_000;
     const D = 24 * H;
@@ -313,7 +316,7 @@ export async function installDemoIpc(page: Page): Promise<void> {
 
     const responses: Record<string, unknown> = {
       app_info: {
-        version: "0.1.2",
+        version: extras.appVersion,
         platform: { os: "macos", os_version: "15.6", arch: "aarch64", support_level: "implemented" },
         data_dir: `${home}/Library/Application Support/org.agasthy.desktop`,
         db_path: `${home}/Library/Application Support/org.agasthy.desktop/agasthy.db`,

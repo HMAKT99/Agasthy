@@ -8,7 +8,6 @@ export default defineConfig({
   reporter: "list",
   use: {
     baseURL: "http://127.0.0.1:1420",
-    channel: process.env.CI ? undefined : "chrome",
     viewport: { width: 1360, height: 850 },
     deviceScaleFactor: 2,
   },

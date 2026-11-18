@@ -60,7 +60,7 @@ claude mcp add agasthy -- agasthy mcp     # 让 Claude Code 也能查询这台�
 | | |
 |---|---|
 | <img src="docs/screenshots/overview.png" alt="概览与洞察" /><br/>**概览。** 现在需要处理什么，每项都有对应操作。 | <img src="docs/screenshots/discovery.png" alt="发现：仓库与证据" /><br/>**发现。** 每个仓库、应用、工具和软件包，都有证据。 |
-| <img src="docs/screenshots/graph.png" alt="机器图谱" /><br/>**机器图谱。** 项目、运行时和依赖的关系。 | <img src="docs/screenshots/impact.png" alt="openssl@3 的影响分析" /><br/>**影响分析。** 删除之前先看会坏什么。 |
+| <img src="docs/screenshots/graph.png" alt="机器图谱" /><br/>**机器图谱。** 你的智能体、它们读取和调用的内容，以及哪些数据离开本机。 | <img src="docs/screenshots/impact.png" alt="openssl@3 的影响分析" /><br/>**影响分析。** 删除之前先看会坏什么。 |
 | <img src="docs/screenshots/ai-instructions.png" alt="AI 生态：指令文件" /><br/>**AI 生态。** 工具、MCP 服务器和指令文件，冲突会被标出。 | <img src="docs/screenshots/agents.png" alt="编程助手页面" /><br/>**编程助手。** 每个助手，以及它留下了什么。 |
 | <img src="docs/screenshots/usage.png" alt="Token 用量页面" /><br/>**Token 用量。** 按天、项目和模型统计 token 与费用。 | <img src="docs/screenshots/processes.png" alt="进程页面" /><br/>**进程。** 每个进程及其端口和所属项目。 |
 | <img src="docs/screenshots/storage.png" alt="存储与清理" /><br/>**存储与清理。** 可重建的目录先进入可恢复的隔离区。 | <img src="docs/screenshots/security.png" alt="安全发现" /><br/>**安全。** 漏洞通告、过期和来源不明的软件。 |
