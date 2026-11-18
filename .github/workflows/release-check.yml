@@ -1,0 +1,47 @@
+name: Release check
+
+# Builds what only the Release workflow builds, on pull requests that change
+# how releases are made, so a broken release build shows up before a tag:
+# the Linux ARM64 AppImage, .deb and command-line tool (unsigned).
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/release.yml
+      - .github/workflows/release-check.yml
+      - scripts/**
+      - apps/desktop/src-tauri/tauri.conf.json
+  workflow_dispatch:
+
+concurrency:
+  group: release-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux-arm:
+    name: Linux ARM64 build
+    runs-on: ubuntu-22.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: System libraries for Tauri
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev build-essential patchelf file
+      - run: pnpm install --frozen-lockfile
+      - name: Build AppImage and .deb (unsigned)
+        run: |
+          pnpm tauri build --bundles appimage,deb --config '{"bundle":{"createUpdaterArtifacts":false}}'
+          ls target/release/bundle/appimage/*.AppImage target/release/bundle/deb/*.deb
+          file target/release/bundle/appimage/*.AppImage | grep -i "aarch64\|ARM aarch64"
+      - name: Command-line tool runs
+        run: |
+          cargo build --release -p agasthy-cli
+          ./target/release/agasthy --version
+          file target/release/agasthy | grep -i aarch64
