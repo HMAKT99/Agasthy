@@ -15,9 +15,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/HMAKT99/Agasthy/releases/download/v0.1.7/AGASTHY-0.1.7-apple-silicon.dmg"><strong>⬇ 下载 Mac 版（Apple 芯片）</strong></a> ·
-  <a href="https://github.com/HMAKT99/Agasthy/releases/download/v0.1.7/AGASTHY_0.1.7_x64-setup.exe">⬇ Windows 预览版</a> ·
-  <a href="https://github.com/HMAKT99/Agasthy/releases/download/v0.1.7/AGASTHY_0.1.7_amd64.AppImage">⬇ Linux 预览版</a> ·
+  <a href="https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/AGASTHY-0.1.8-apple-silicon.dmg"><strong>⬇ 下载 Mac 版（Apple 芯片）</strong></a> ·
+  <a href="https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/AGASTHY_0.1.8_x64-setup.exe">⬇ Windows 预览版</a> ·
+  <a href="https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/AGASTHY_0.1.8_amd64.AppImage">⬇ Linux 预览版</a> ·
   免费开源 · 无需账号 · 无遥测
 </p>
 
@@ -112,7 +112,7 @@ claude mcp add agasthy -- ~/.local/bin/agasthy mcp
 
 **macOS（Apple 芯片，macOS 12+）**
 
-**[⬇ 下载 macOS 版（Apple 芯片）](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.7/AGASTHY-0.1.7-apple-silicon.dmg)**
+**[⬇ 下载 macOS 版（Apple 芯片）](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/AGASTHY-0.1.8-apple-silicon.dmg)**
 
 打开后把 **AGASTHY** 拖进**应用程序**。第一次启动时 macOS 会提示无法验证开发者：**系统设置 → 隐私与安全性 → 仍要打开**。然后扫描你的代码目录。
 
@@ -123,23 +123,23 @@ brew install --cask hmakt99/tap/agasthy     # 桌面应用
 brew install hmakt99/tap/agasthy-cli        # 可选：给助手用的只读 CLI 和 MCP 服务器
 ```
 
-不用 Homebrew？下载 [⬇ CLI](https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-macos-aarch64.tar.gz)（解压后把 `agasthy` 放进 PATH），或 [⬇ Claude Desktop 扩展](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.7/agasthy-mcp-0.1.7.mcpb)（双击安装）。
+不用 Homebrew？下载 [⬇ CLI](https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-macos-aarch64.tar.gz)（解压后把 `agasthy` 放进 PATH），或 [⬇ Claude Desktop 扩展](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/agasthy-mcp-0.1.8.mcpb)（双击安装）。
 
 **Windows（x64，预览版）**
 
-**[⬇ 下载 Windows 版（x64）](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.7/AGASTHY_0.1.7_x64-setup.exe)**
+**[⬇ 下载 Windows 版（x64）](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/AGASTHY_0.1.8_x64-setup.exe)**
 
 直接运行。因为安装包还没有代码签名，Windows 会提示“Windows 已保护你的电脑”：**更多信息 → 仍要运行**。然后扫描你的代码目录。
 
-在用编程助手？再下载 [⬇ CLI](https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-windows-x86_64.zip)（解压后把 `agasthy.exe` 放进 PATH），或 [⬇ Claude Desktop 扩展](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.7/agasthy-mcp-0.1.7.mcpb)（双击安装）。
+在用编程助手？再下载 [⬇ CLI](https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-windows-x86_64.zip)（解压后把 `agasthy.exe` 放进 PATH），或 [⬇ Claude Desktop 扩展](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/agasthy-mcp-0.1.8.mcpb)（双击安装）。
 
 **Linux（x64，预览版）**
 
-**[⬇ 下载 AppImage（任意发行版）](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.7/AGASTHY_0.1.7_amd64.AppImage)** · **[⬇ 下载 .deb（Ubuntu、Debian）](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.7/agasthy_0.1.7_amd64.deb)**
+**[⬇ 下载 AppImage（任意发行版）](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/AGASTHY_0.1.8_amd64.AppImage)** · **[⬇ 下载 .deb（Ubuntu、Debian）](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/agasthy_0.1.8_amd64.deb)**
 
 AppImage：`chmod +x AGASTHY_*_amd64.AppImage` 后运行。.deb：`sudo apt install ./agasthy_*_amd64.deb`。然后扫描你的代码目录。
 
-在用编程助手？再下载 [⬇ CLI](https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-linux-x86_64.tar.gz)（解压后把 `agasthy` 放进 PATH），或 [⬇ Claude Desktop 扩展](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.7/agasthy-mcp-0.1.7.mcpb)。
+在用编程助手？再下载 [⬇ CLI](https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-linux-x86_64.tar.gz)（解压后把 `agasthy` 放进 PATH），或 [⬇ Claude Desktop 扩展](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/agasthy-mcp-0.1.8.mcpb)。
 
 AGASTHY 常驻菜单栏：关闭窗口后它仍在运行，**退出**在菜单栏菜单里。更新在应用内提示，经过签名校验，只有你点击**安装并重启**后才会安装。
 
