@@ -43,7 +43,7 @@ APP="target/${TARGET:+$TARGET/}release/bundle/macos/AGASTHY.app"
 
 # Name the DMG after what was actually built (the shell may run under Rosetta).
 case "$(lipo -archs "$APP/Contents/MacOS/agasthy-desktop")" in
-  "x86_64 arm64" | "arm64 x86_64") ARCH_LABEL=universal ;;
+  "x86_64 arm64" | "arm64 x86_64") ARCH_LABEL=macos-universal ;;
   arm64) ARCH_LABEL=apple-silicon ;;
   x86_64) ARCH_LABEL=intel ;;
   *) ARCH_LABEL=unknown ;;
@@ -69,10 +69,16 @@ else
   echo "note: ad-hoc signed (no Developer ID). On first launch macOS asks users to allow it in System Settings > Privacy & Security." >&2
 fi
 
-# The signed update archive, named the way the updater manifest expects.
+# The signed update archive, named the way the updater manifest expects
+# (a universal archive serves both Apple silicon and Intel installs).
+case "$ARCH_LABEL" in
+  macos-universal) UPD=universal ;;
+  intel) UPD=x86_64 ;;
+  *) UPD=aarch64 ;;
+esac
 if [ -f "$APP.tar.gz" ] && [ -f "$APP.tar.gz.sig" ]; then
-  cp "$APP.tar.gz" "dist/AGASTHY_${VERSION}_aarch64.app.tar.gz"
-  cp "$APP.tar.gz.sig" "dist/AGASTHY_${VERSION}_aarch64.app.tar.gz.sig"
+  cp "$APP.tar.gz" "dist/AGASTHY_${VERSION}_${UPD}.app.tar.gz"
+  cp "$APP.tar.gz.sig" "dist/AGASTHY_${VERSION}_${UPD}.app.tar.gz.sig"
 fi
 
 (cd dist && shasum -a 256 "$(basename "$DMG")" > "$(basename "$DMG").sha256")

@@ -12,7 +12,10 @@ trap 'rm -rf "$work"' EXIT
 b="$work/bundle"
 
 mkdir -p "$b/bin/darwin-arm64" "$b/bin/linux-x64" "$b/bin/win32-x64"
-tar -C "$b/bin/darwin-arm64" -xzf "$dist/agasthy-cli-macos-aarch64.tar.gz" agasthy
+# Universal (Apple silicon and Intel) when the release has it; the folder name is only a label.
+mac_cli="$dist/agasthy-cli-macos-universal.tar.gz"
+[ -f "$mac_cli" ] || mac_cli="$dist/agasthy-cli-macos-aarch64.tar.gz"
+tar -C "$b/bin/darwin-arm64" -xzf "$mac_cli" agasthy
 tar -C "$b/bin/linux-x64" -xzf "$dist/agasthy-cli-linux-x86_64.tar.gz" agasthy
 unzip -q -j "$dist/agasthy-cli-windows-x86_64.zip" agasthy.exe -d "$b/bin/win32-x64"
 chmod +x "$b/bin/darwin-arm64/agasthy" "$b/bin/linux-x64/agasthy"

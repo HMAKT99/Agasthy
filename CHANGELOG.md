@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+- **Intel Macs:** releases ship one universal app (`AGASTHY-<version>-macos-universal.dmg`) and a universal command-line tool, for Apple silicon and Intel. Homebrew no longer limits AGASTHY to Apple silicon, and Intel installs receive in-app updates. The Apple silicon file names stay for existing links.
+
 ## [0.1.8] - 2026-11-18
 
 - **Updates when a copy can't update itself:** if the start-up check fails for a reason other than the network (for example the app runs from the mounted DMG, a deleted folder or a read-only location), a banner now says so and opens the download page. Network failures stay quiet.

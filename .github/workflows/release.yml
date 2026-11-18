@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   macos:
-    name: macOS (Apple silicon)
+    name: macOS (Apple silicon and Intel)
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,6 +35,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
       - uses: Swatinem/rust-cache@v2
 
       - name: Check the tag matches the app version
@@ -76,7 +78,15 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: pnpm release:mac
+          # One app for Apple silicon and Intel.
+          TARGET: universal-apple-darwin
+        run: |
+          pnpm release:mac
+          v="${GITHUB_REF_NAME#v}"
+          lipo -archs "target/universal-apple-darwin/release/bundle/macos/AGASTHY.app/Contents/MacOS/agasthy-desktop" | grep -q x86_64
+          # The previous name too, so links to the Apple silicon DMG keep working.
+          cp "dist/AGASTHY-$v-macos-universal.dmg" "dist/AGASTHY-$v-apple-silicon.dmg"
+          (cd dist && shasum -a 256 "AGASTHY-$v-apple-silicon.dmg" > "AGASTHY-$v-apple-silicon.dmg.sha256")
 
       # With an Apple Developer ID configured, never publish a build that only
       # looks signed: check the app's signature, Gatekeeper's verdict and the
@@ -108,8 +118,12 @@ jobs:
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          cargo build --release -p agasthy-cli
-          mkdir -p cli && cp target/release/agasthy cli/
+          # One binary for Apple silicon and Intel.
+          cargo build --release -p agasthy-cli --target aarch64-apple-darwin
+          cargo build --release -p agasthy-cli --target x86_64-apple-darwin
+          mkdir -p cli
+          lipo -create -output cli/agasthy target/aarch64-apple-darwin/release/agasthy target/x86_64-apple-darwin/release/agasthy
+          lipo -archs cli/agasthy
           # Signed and notarized too when configured, so a downloaded `agasthy`
           # is not blocked. A bare binary cannot be stapled; Gatekeeper looks
           # the ticket up online.
@@ -121,9 +135,13 @@ jobs:
               xcrun notarytool submit "$RUNNER_TEMP/agasthy-cli.zip" --apple-id "$APPLE_ID" --password "$APPLE_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
             fi
           fi
-          tar -C cli -czf dist/agasthy-cli-macos-aarch64.tar.gz agasthy
-          (cd dist && shasum -a 256 agasthy-cli-macos-aarch64.tar.gz > agasthy-cli-macos-aarch64.tar.gz.sha256)
-          mkdir -p check && tar -C check -xzf dist/agasthy-cli-macos-aarch64.tar.gz && ./check/agasthy --version
+          # Published as universal, and under the previous aarch64 name for existing links and installs.
+          for name in agasthy-cli-macos-universal agasthy-cli-macos-aarch64; do
+            tar -C cli -czf "dist/$name.tar.gz" agasthy
+            (cd dist && shasum -a 256 "$name.tar.gz" > "$name.tar.gz.sha256")
+          done
+          mkdir -p check && tar -C check -xzf dist/agasthy-cli-macos-universal.tar.gz && ./check/agasthy --version
+          arch -x86_64 ./check/agasthy --version || echo "::warning::could not run the Intel slice (Rosetta not installed on this runner)"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -254,7 +272,7 @@ jobs:
 
           ## Install
 
-          **macOS (Apple silicon, macOS 12+):** download `AGASTHY-…-apple-silicon.dmg` and drag AGASTHY to Applications. The first time, macOS says it cannot verify the developer (the app is not notarized by Apple yet): open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**.
+          **macOS (Apple silicon and Intel, macOS 12+):** download `AGASTHY-…-macos-universal.dmg` and drag AGASTHY to Applications. The first time, macOS says it cannot verify the developer (the app is not notarized by Apple yet): open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**.
 
           **Linux (x64, preview):** download `AGASTHY_…_amd64.AppImage`, make it executable (`chmod +x`) and run it, or install `agasthy_…_amd64.deb` with `sudo apt install ./agasthy_…_amd64.deb`.
 
