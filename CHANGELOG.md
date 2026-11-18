@@ -4,12 +4,17 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-11-18
+
 - **Machine Graph is now the Agent Map:** your machine drawn from the agents' side. Projects in the middle, then the instruction and config files in them, the agents that read those files, and the MCP servers, models and providers they use. A boundary marks the edge of the machine, and connections that cross it (cloud providers, remote MCP servers) are drawn in orange.
   - Click anything to see what it reads, calls, sends data to and where it worked; double-click to show only what it involves.
   - Work bands show where each agent spent tokens (7, 30 or 90 days), from the agents' own logs.
   - Filters for agents (including "installed only") and layers, a "what leaves the machine" lens, search, zoom and pan.
   - Each agent gets a briefing for a chosen project: runtimes, instructions it reads, MCP servers it can call and which of them leave the machine. Copy it into a session.
   - "All connections" opens the previous node graph around any item, with depth and kind filters and runtime impact.
+- **GitHub Copilot plugin:** an Agent Plugins 1.0 manifest (`plugins/agasthy/plugin.json`, `mcp.json`) so Copilot can install the skill and MCP server.
+- **Release channels:** publishing a release now also publishes it to the official MCP Registry and updates the Homebrew tap.
+- **Docs:** a Chinese README (`README.zh-CN.md`), and a one-command way to try the CLI without the desktop app.
 
 ## [0.1.6] - 2026-11-17
 

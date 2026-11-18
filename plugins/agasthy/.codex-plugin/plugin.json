@@ -1,6 +1,6 @@
 {
   "name": "agasthy",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Ask your machine with real data: repositories and uncommitted work, runtimes and packages, what breaks if you remove something, live coding-agent sessions and what they left running, processes and ports, and token usage. Read-only skill plus MCP server for AGASTHY.",
   "author": {
     "name": "HMAKT99",
