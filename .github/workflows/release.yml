@@ -54,8 +54,9 @@ jobs:
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-        if: env.APPLE_CERTIFICATE != ''
+        # Checked in the shell: a step's own env is not reliably visible to its `if:`.
         run: |
+          if [ -z "$APPLE_CERTIFICATE" ]; then echo "No Apple certificate configured: building ad-hoc signed."; exit 0; fi
           KEYCHAIN="$RUNNER_TEMP/build.keychain-db"
           KC_PASS=$(openssl rand -hex 16)
           echo "$APPLE_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/cert.p12"
@@ -77,10 +78,49 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: pnpm release:mac
 
+      # With an Apple Developer ID configured, never publish a build that only
+      # looks signed: check the app's signature, Gatekeeper's verdict and the
+      # stapled notarization ticket, and fail the release otherwise.
+      - name: Verify signing and notarization (only if configured)
+        env:
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+        run: |
+          set -euo pipefail
+          if [ -z "$APPLE_SIGNING_IDENTITY" ]; then echo "No Developer ID configured: nothing to verify."; exit 0; fi
+          app=$(ls -d target/*release/bundle/macos/AGASTHY.app target/*/release/bundle/macos/AGASTHY.app 2>/dev/null | head -1)
+          dmg=$(ls dist/AGASTHY-*.dmg | head -1)
+          codesign --verify --deep --strict --verbose=2 "$app"
+          codesign -dv "$app" 2>&1 | grep -E "Authority=Developer ID Application|TeamIdentifier"
+          if [ -n "$APPLE_ID" ]; then
+            spctl --assess --type execute -vv "$app" 2>&1 | tee /dev/stderr | grep -q "source=Notarized Developer ID"
+            xcrun stapler validate "$dmg"
+            spctl --assess --type open --context context:primary-signature -vv "$dmg" 2>&1 | tee /dev/stderr | grep -q "source=Notarized Developer ID"
+            echo "App and DMG are signed and notarized: macOS opens them without a prompt."
+          else
+            echo "::warning::Signed with a Developer ID but not notarized (APPLE_ID not set); macOS will still prompt."
+          fi
+
       - name: Command-line tool (for agents and scripts)
+        env:
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           cargo build --release -p agasthy-cli
           mkdir -p cli && cp target/release/agasthy cli/
+          # Signed and notarized too when configured, so a downloaded `agasthy`
+          # is not blocked. A bare binary cannot be stapled; Gatekeeper looks
+          # the ticket up online.
+          if [ -n "$APPLE_SIGNING_IDENTITY" ]; then
+            codesign --force --sign "$APPLE_SIGNING_IDENTITY" --options runtime --timestamp cli/agasthy
+            codesign --verify --strict --verbose=2 cli/agasthy
+            if [ -n "$APPLE_ID" ] && [ -n "$APPLE_PASSWORD" ] && [ -n "$APPLE_TEAM_ID" ]; then
+              ditto -c -k cli/agasthy "$RUNNER_TEMP/agasthy-cli.zip"
+              xcrun notarytool submit "$RUNNER_TEMP/agasthy-cli.zip" --apple-id "$APPLE_ID" --password "$APPLE_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
+            fi
+          fi
           tar -C cli -czf dist/agasthy-cli-macos-aarch64.tar.gz agasthy
           (cd dist && shasum -a 256 agasthy-cli-macos-aarch64.tar.gz > agasthy-cli-macos-aarch64.tar.gz.sha256)
           mkdir -p check && tar -C check -xzf dist/agasthy-cli-macos-aarch64.tar.gz && ./check/agasthy --version
