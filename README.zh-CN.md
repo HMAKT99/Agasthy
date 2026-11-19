@@ -21,6 +21,8 @@
   免费开源 · 无需账号 · 无遥测
 </p>
 
+<p align="center">Mac 或 Linux，一行命令安装，没有安全提示：<br/><code>curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | sh</code></p>
+
 https://github.com/user-attachments/assets/2718c8ae-1576-4c4f-a494-646731a019fa
 
 ---
@@ -101,8 +103,17 @@ claude mcp add agasthy -- ~/.local/bin/agasthy mcp
 
 ## 安装
 
+**最快的方式（macOS 或 Linux）**：没有安全提示，自动校验 SHA-256，不需要管理员权限。
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | sh            # 桌面应用
+curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | sh -s -- --cli # 桌面应用和 CLI
+```
+
+脚本从 GitHub 下载最新版本，与发布页上的 SHA-256 比对后，把 AGASTHY 装进“应用程序”（Linux：`~/Applications/AGASTHY.AppImage`）。可以先阅读 [install.sh](install.sh)；校验不通过时什么都不会安装。
+
 > [!IMPORTANT]
-> **第一次启动会有一次安全提示。** AGASTHY 还没有购买 Apple 开发者 ID 或 Windows 代码签名证书。这不代表下载的文件有问题，只是操作系统无法验证发布者。
+> **自己下载安装包时，第一次启动会有一次安全提示。** AGASTHY 还没有购买 Apple 开发者 ID 或 Windows 代码签名证书。这不代表下载的文件有问题，只是操作系统无法验证发布者。
 >
 > - **macOS：** 提示“Apple 无法验证 AGASTHY 是否包含恶意软件” → **系统设置 → 隐私与安全性 → 仍要打开**。
 > - **Windows：** 提示“Windows 已保护你的电脑”（SmartScreen）→ **更多信息 → 仍要运行**。
@@ -114,7 +125,7 @@ claude mcp add agasthy -- ~/.local/bin/agasthy mcp
 
 **[⬇ 下载 macOS 版（Apple 芯片）](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/AGASTHY-0.1.8-apple-silicon.dmg)**
 
-打开后把 **AGASTHY** 拖进**应用程序**。第一次启动时 macOS 会提示无法验证开发者：**系统设置 → 隐私与安全性 → 仍要打开**。然后扫描你的代码目录。
+打开后把 **AGASTHY** 拖进**应用程序**。第一次启动时 macOS 会提示无法验证开发者：先点**完成**（不要点“移到废纸篓”），再到**系统设置 → 隐私与安全性 → 仍要打开**。然后扫描你的代码目录。
 
 或者用 [Homebrew](https://brew.sh)：
 

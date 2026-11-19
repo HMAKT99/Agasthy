@@ -100,22 +100,28 @@ jobs:
         if: steps.token.outputs.ok == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          # Set once releases are notarized: the cask then drops its first-launch note.
+          NOTARIZED: ${{ secrets.APPLE_ID != '' && 'yes' || '' }}
         run: |
           set -euo pipefail
           [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "not a release tag: $TAG"; exit 1; }
           v="${TAG#v}"
           mkdir sums
-          gh release download "$TAG" -D sums \
-            -p "AGASTHY-$v-apple-silicon.dmg.sha256" \
-            -p "agasthy-cli-macos-aarch64.tar.gz.sha256" \
-            -p "agasthy-cli-linux-x86_64.tar.gz.sha256"
-          python3 scripts/bump-homebrew-tap.py tap "$v" sums
+          # Each checksum the release has; the script picks universal or Apple silicon files.
+          for f in "AGASTHY-$v-macos-universal.dmg" "AGASTHY-$v-apple-silicon.dmg" \
+                   agasthy-cli-macos-universal.tar.gz agasthy-cli-macos-aarch64.tar.gz \
+                   agasthy-cli-linux-x86_64.tar.gz agasthy-cli-linux-aarch64.tar.gz; do
+            gh release download "$TAG" -D sums -p "$f.sha256" 2>/dev/null || true
+          done
+          ls sums
+          python3 scripts/bump-homebrew-tap.py tap "$v" sums ${NOTARIZED:+--notarized}
           cd tap
-          if git diff --quiet; then echo "tap already at $v"; exit 0; fi
-          git diff
+          git add -A
+          if git diff --cached --quiet; then echo "tap already at $v"; exit 0; fi
+          git diff --cached
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -am "agasthy $v, agasthy-cli $v"
+          git commit -m "agasthy $v, agasthy-cli $v"
           git push origin HEAD
 
   winget:

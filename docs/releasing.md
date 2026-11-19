@@ -5,7 +5,7 @@ Releases are built by `.github/workflows/release.yml` when a tag `vX.Y.Z` is pus
 ## One-time setup
 
 1. **Updater signing key.** Installed copies only accept updates signed with the private key whose public half is in `tauri.conf.json` (`plugins.updater.pubkey`). The key was generated with `pnpm tauri signer generate` and lives at `~/.tauri/agasthy-updater.key` on the maintainer's machine. **Never commit it.** Add its contents as the repository secret `TAURI_SIGNING_PRIVATE_KEY`. If the key is lost, existing installs can no longer be updated automatically; keep a backup in a password manager.
-2. **Apple signing (optional).** Without it, users right-click → Open the first time. With an Apple Developer account, add these secrets and the workflow signs and notarizes automatically: `APPLE_CERTIFICATE` (base64 of a Developer ID Application `.p12`), `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_PASSWORD` (an app-specific password) and `APPLE_TEAM_ID`.
+2. **Apple signing (optional).** Without it, macOS asks users to allow the app once (System Settings → Privacy & Security → Open Anyway). With an Apple Developer account, add these secrets and the workflow signs and notarizes the app, the DMG and the CLI, and fails the release if Gatekeeper does not accept the result. Step by step: [signing-macos.md](signing-macos.md). The secrets: `APPLE_CERTIFICATE` (base64 of a Developer ID Application `.p12`), `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_PASSWORD` (an app-specific password) and `APPLE_TEAM_ID`.
 
 ## Cutting a release
 

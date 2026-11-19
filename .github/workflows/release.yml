@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   macos:
-    name: macOS (Apple silicon)
+    name: macOS (Apple silicon and Intel)
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,6 +35,10 @@ jobs:
           node-version: 22
           cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
+      # Inside the repo, so the targets go to the toolchain rust-toolchain.toml pins
+      # (the action's `targets:` would add them to "stable" instead).
+      - name: Rust targets for a universal macOS build
+        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin && rustup target list --installed
       - uses: Swatinem/rust-cache@v2
 
       - name: Check the tag matches the app version
@@ -54,8 +58,9 @@ jobs:
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-        if: env.APPLE_CERTIFICATE != ''
+        # Checked in the shell: a step's own env is not reliably visible to its `if:`.
         run: |
+          if [ -z "$APPLE_CERTIFICATE" ]; then echo "No Apple certificate configured: building ad-hoc signed."; exit 0; fi
           KEYCHAIN="$RUNNER_TEMP/build.keychain-db"
           KC_PASS=$(openssl rand -hex 16)
           echo "$APPLE_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/cert.p12"
@@ -75,15 +80,70 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: pnpm release:mac
+          # One app for Apple silicon and Intel.
+          TARGET: universal-apple-darwin
+        run: |
+          pnpm release:mac
+          v="${GITHUB_REF_NAME#v}"
+          lipo -archs "target/universal-apple-darwin/release/bundle/macos/AGASTHY.app/Contents/MacOS/agasthy-desktop" | grep -q x86_64
+          # The previous name too, so links to the Apple silicon DMG keep working.
+          cp "dist/AGASTHY-$v-macos-universal.dmg" "dist/AGASTHY-$v-apple-silicon.dmg"
+          (cd dist && shasum -a 256 "AGASTHY-$v-apple-silicon.dmg" > "AGASTHY-$v-apple-silicon.dmg.sha256")
+
+      # With an Apple Developer ID configured, never publish a build that only
+      # looks signed: check the app's signature, Gatekeeper's verdict and the
+      # stapled notarization ticket, and fail the release otherwise.
+      - name: Verify signing and notarization (only if configured)
+        env:
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+        run: |
+          set -euo pipefail
+          if [ -z "$APPLE_SIGNING_IDENTITY" ]; then echo "No Developer ID configured: nothing to verify."; exit 0; fi
+          app=$(ls -d target/*release/bundle/macos/AGASTHY.app target/*/release/bundle/macos/AGASTHY.app 2>/dev/null | head -1)
+          dmg=$(ls dist/AGASTHY-*.dmg | head -1)
+          codesign --verify --deep --strict --verbose=2 "$app"
+          codesign -dv "$app" 2>&1 | grep -E "Authority=Developer ID Application|TeamIdentifier"
+          if [ -n "$APPLE_ID" ]; then
+            spctl --assess --type execute -vv "$app" 2>&1 | tee /dev/stderr | grep -q "source=Notarized Developer ID"
+            xcrun stapler validate "$dmg"
+            spctl --assess --type open --context context:primary-signature -vv "$dmg" 2>&1 | tee /dev/stderr | grep -q "source=Notarized Developer ID"
+            echo "App and DMG are signed and notarized: macOS opens them without a prompt."
+          else
+            echo "::warning::Signed with a Developer ID but not notarized (APPLE_ID not set); macOS will still prompt."
+          fi
 
       - name: Command-line tool (for agents and scripts)
+        env:
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          cargo build --release -p agasthy-cli
-          mkdir -p cli && cp target/release/agasthy cli/
-          tar -C cli -czf dist/agasthy-cli-macos-aarch64.tar.gz agasthy
-          (cd dist && shasum -a 256 agasthy-cli-macos-aarch64.tar.gz > agasthy-cli-macos-aarch64.tar.gz.sha256)
-          mkdir -p check && tar -C check -xzf dist/agasthy-cli-macos-aarch64.tar.gz && ./check/agasthy --version
+          # One binary for Apple silicon and Intel.
+          cargo build --release -p agasthy-cli --target aarch64-apple-darwin
+          cargo build --release -p agasthy-cli --target x86_64-apple-darwin
+          mkdir -p cli
+          lipo -create -output cli/agasthy target/aarch64-apple-darwin/release/agasthy target/x86_64-apple-darwin/release/agasthy
+          lipo -archs cli/agasthy
+          # Signed and notarized too when configured, so a downloaded `agasthy`
+          # is not blocked. A bare binary cannot be stapled; Gatekeeper looks
+          # the ticket up online.
+          if [ -n "$APPLE_SIGNING_IDENTITY" ]; then
+            codesign --force --sign "$APPLE_SIGNING_IDENTITY" --options runtime --timestamp cli/agasthy
+            codesign --verify --strict --verbose=2 cli/agasthy
+            if [ -n "$APPLE_ID" ] && [ -n "$APPLE_PASSWORD" ] && [ -n "$APPLE_TEAM_ID" ]; then
+              ditto -c -k cli/agasthy "$RUNNER_TEMP/agasthy-cli.zip"
+              xcrun notarytool submit "$RUNNER_TEMP/agasthy-cli.zip" --apple-id "$APPLE_ID" --password "$APPLE_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
+            fi
+          fi
+          # Published as universal, and under the previous aarch64 name for existing links and installs.
+          for name in agasthy-cli-macos-universal agasthy-cli-macos-aarch64; do
+            tar -C cli -czf "dist/$name.tar.gz" agasthy
+            (cd dist && shasum -a 256 "$name.tar.gz" > "$name.tar.gz.sha256")
+          done
+          mkdir -p check && tar -C check -xzf dist/agasthy-cli-macos-universal.tar.gz && ./check/agasthy --version
+          arch -x86_64 ./check/agasthy --version || echo "::warning::could not run the Intel slice (Rosetta not installed on this runner)"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -187,9 +247,62 @@ jobs:
           path: dist/*
           if-no-files-found: error
 
+  linux-arm:
+    name: Linux (ARM64, preview)
+    # Native ARM runner; the oldest one, so the AppImage runs on older distributions too.
+    runs-on: ubuntu-22.04-arm
+    # A new build: if it fails, the release still ships (without the ARM files).
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: System libraries for Tauri
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev build-essential patchelf file
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build AppImage and .deb with signed update file
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          v=$(node -p "require('./apps/desktop/src-tauri/tauri.conf.json').version")
+          pnpm tauri build --bundles appimage,deb
+          mkdir -p dist
+          img=$(ls target/release/bundle/appimage/*.AppImage | head -1)
+          deb=$(ls target/release/bundle/deb/*.deb | head -1)
+          test -f "$img" && test -f "$img.sig" && test -f "$deb"
+          cp "$img" "dist/AGASTHY_${v}_aarch64.AppImage"
+          cp "$img.sig" "dist/AGASTHY_${v}_aarch64.AppImage.sig"
+          cp "$deb" "dist/agasthy_${v}_arm64.deb"
+          (cd dist && sha256sum "AGASTHY_${v}_aarch64.AppImage" > "AGASTHY_${v}_aarch64.AppImage.sha256" && sha256sum "agasthy_${v}_arm64.deb" > "agasthy_${v}_arm64.deb.sha256")
+
+      - name: Command-line tool (for agents and scripts)
+        run: |
+          cargo build --release -p agasthy-cli
+          mkdir -p cli && cp target/release/agasthy cli/
+          tar -C cli -czf dist/agasthy-cli-linux-aarch64.tar.gz agasthy
+          (cd dist && sha256sum agasthy-cli-linux-aarch64.tar.gz > agasthy-cli-linux-aarch64.tar.gz.sha256)
+          mkdir -p check && tar -C check -xzf dist/agasthy-cli-linux-aarch64.tar.gz && ./check/agasthy --version
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-arm
+          path: dist/*
+          if-no-files-found: error
+
   publish:
     name: Draft release
-    needs: [macos, windows, linux]
+    needs: [macos, windows, linux, linux-arm]
+    # The ARM Linux build is a preview: publish without it if it failed.
+    if: ${{ !cancelled() && needs.macos.result == 'success' && needs.windows.result == 'success' && needs.linux.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -209,14 +322,22 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cat > "$RUNNER_TEMP/notes.md" <<'NOTES'
+          ## Install in one line (macOS or Linux, no security prompt)
+
+          ```bash
+          curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | sh
+          ```
+
+          Add `-s -- --cli` after `sh` to also install the command-line tool. The script checks every download against its published SHA-256 and installs nothing if one does not match.
+
           > [!IMPORTANT]
-          > **Please note: expect one security prompt on first launch.** AGASTHY is not yet signed with a paid Apple or Microsoft certificate, so macOS and Windows warn the first time. This is expected; the steps below get past it in one click, and you only do it once. Each file has a `.sha256` checksum next to it, and in-app updates are signature-checked.
+          > **Downloading a file below yourself? Expect one security prompt on first launch.** AGASTHY is not yet signed with a paid Apple or Microsoft certificate, so macOS and Windows warn the first time. This is expected; the steps below get past it in one click, and you only do it once. Each file has a `.sha256` checksum next to it, and in-app updates are signature-checked.
 
-          ## Install
+          ## Install from the files
 
-          **macOS (Apple silicon, macOS 12+):** download `AGASTHY-…-apple-silicon.dmg` and drag AGASTHY to Applications. The first time, macOS says it cannot verify the developer (the app is not notarized by Apple yet): open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**.
+          **macOS (Apple silicon and Intel, macOS 12+):** download `AGASTHY-…-macos-universal.dmg` and drag AGASTHY to Applications. The first time, macOS says it cannot verify the developer (the app is not notarized by Apple yet): click **Done** (not *Move to Trash*), open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**.
 
-          **Linux (x64, preview):** download `AGASTHY_…_amd64.AppImage`, make it executable (`chmod +x`) and run it, or install `agasthy_…_amd64.deb` with `sudo apt install ./agasthy_…_amd64.deb`.
+          **Linux (x64 and ARM64, preview):** download `AGASTHY_…_amd64.AppImage` (ARM64: `…_aarch64.AppImage`), make it executable (`chmod +x`) and run it, or install `agasthy_…_amd64.deb` (ARM64: `…_arm64.deb`) with `sudo apt install ./agasthy_….deb`.
 
           **Command-line tool and agent skill:** `agasthy-cli-…` lets coding agents and scripts query what AGASTHY found (read-only, JSON). For OpenClaw, Hermes and Claude Code, install the AGASTHY skill: see [integrations/agent-skill](https://github.com/HMAKT99/Agasthy/tree/main/integrations/agent-skill).
 

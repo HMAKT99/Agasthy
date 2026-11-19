@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+- **One-line install for macOS and Linux:** `curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | sh`. It checks every download against its published SHA-256, needs no admin rights, and installs without macOS's "could not verify" prompt. `--cli` also installs the command-line tool, and `--cli-only` installs just that.
+- **Clearer first-launch help** in the README and release notes for anyone installing from the files.
+- **First run:** a new install opens with "Let AGASTHY look at this machine" at the top of the Overview. One click scans installed software, packages and the AI setup (agents, MCP servers, instruction files), and project folders too if you've added any, so the Agent Map and AI pages fill in straight away.
+- **Linux on ARM64 (preview):** releases include `AGASTHY_<version>_aarch64.AppImage`, `agasthy_<version>_arm64.deb` and `agasthy-cli-linux-aarch64.tar.gz` for Raspberry Pi, ARM servers and ARM laptops, with in-app updates.
+- **Intel Macs:** releases ship one universal app (`AGASTHY-<version>-macos-universal.dmg`) and a universal command-line tool, for Apple silicon and Intel. Homebrew no longer limits AGASTHY to Apple silicon, and Intel installs receive in-app updates. The Apple silicon file names stay for existing links.
 - **Windows on ARM:** `install.ps1` installs the x64 command-line tool, which runs under Windows' built-in emulation, instead of refusing.
 
 ## [0.1.8] - 2026-11-18

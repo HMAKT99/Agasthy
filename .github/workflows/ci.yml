@@ -88,6 +88,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      # Inside the repo, so the targets go to the toolchain rust-toolchain.toml pins
+      # (the action's `targets:` would add them to "stable" instead).
+      - name: Rust targets for a universal macOS build
+        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin && rustup target list --installed
       - uses: Swatinem/rust-cache@v2
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
@@ -95,11 +99,23 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Build unsigned bundle
+      - name: Build unsigned universal bundle (Apple silicon and Intel), as releases do
         # Updater artifacts need the release signing key, which only the Release workflow has.
-        run: pnpm --filter @agasthy/desktop tauri build --bundles app --config '{"bundle":{"createUpdaterArtifacts":false}}'
+        run: pnpm --filter @agasthy/desktop tauri build --target universal-apple-darwin --bundles app --config '{"bundle":{"createUpdaterArtifacts":false}}'
+      - name: Both architectures are in the app and it starts on each
+        run: |
+          app=target/universal-apple-darwin/release/bundle/macos/AGASTHY.app
+          lipo -archs "$app/Contents/MacOS/agasthy-desktop" | tee /dev/stderr | grep -q "x86_64" 
+          lipo -archs "$app/Contents/MacOS/agasthy-desktop" | grep -q "arm64"
+      - name: Universal command-line tool runs on both architectures
+        run: |
+          cargo build --release -p agasthy-cli --target aarch64-apple-darwin
+          cargo build --release -p agasthy-cli --target x86_64-apple-darwin
+          lipo -create -output agasthy target/aarch64-apple-darwin/release/agasthy target/x86_64-apple-darwin/release/agasthy
+          ./agasthy --version
+          if arch -x86_64 /usr/bin/true 2>/dev/null; then arch -x86_64 ./agasthy --version; else echo "Rosetta not available on this runner; skipped the Intel run"; fi
       - uses: actions/upload-artifact@v4
         with:
-          name: AGASTHY-macos-unsigned
-          path: target/release/bundle/macos/AGASTHY.app
+          name: AGASTHY-macos-universal-unsigned
+          path: target/universal-apple-darwin/release/bundle/macos/AGASTHY.app
           retention-days: 7
