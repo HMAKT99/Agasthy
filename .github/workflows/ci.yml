@@ -88,8 +88,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-apple-darwin,x86_64-apple-darwin
+      # Inside the repo, so the targets go to the toolchain rust-toolchain.toml pins
+      # (the action's `targets:` would add them to "stable" instead).
+      - name: Rust targets for a universal macOS build
+        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin && rustup target list --installed
       - uses: Swatinem/rust-cache@v2
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
