@@ -48,7 +48,7 @@ A developer machine holds hundreds of moving parts: cloned repositories, several
 
 | | |
 |---|---|
-| 📦 **Everything, discovered** | Repositories (branch, uncommitted work, remotes, duplicate clones), applications, CLI tools and runtimes (which copy is active, which are shadowed), and packages from Homebrew, npm, pnpm, uv, pip and cargo. Every fact carries its evidence. |
+| 📦 **Everything, discovered** | Repositories (branch, uncommitted work, remotes, duplicate clones), applications, CLI tools and runtimes (which copy is active, which are shadowed), and packages from Homebrew, npm, pnpm, uv, pip and cargo (on Linux also pacman, Flatpak and Snap). Every fact carries its evidence. |
 | 🕸️ **A knowledge graph of your machine** | Projects, runtimes, dependencies, packages, tools and AI configuration, linked. See which projects share a dependency and what relies on what. |
 | 💥 **Impact analysis** | "What breaks if I remove this?" for any package, runtime or tool, simulated before you touch anything. Try dependency upgrades in an isolated Update Lab. |
 | 🤖 **Coding agents, live** | Every Claude Code, Codex, Gemini CLI, Cursor, Aider, Hermes or OpenClaw session with its memory, ports, MCP and dev servers. When an agent exits and leaves a server running, AGASTHY says which session started it and stops it in one reviewed step. |
@@ -163,7 +163,7 @@ AGASTHY lives in the menu bar: closing the window keeps it running, and **Quit**
 | macOS 12+ (Apple silicon) | **Supported.** Built and tested on macOS 15 / M2. |
 | macOS (Intel) | **Preview.** The universal app and CLI include Intel; built in CI, not yet tested on an Intel Mac. [Reports welcome](https://github.com/HMAKT99/Agasthy/issues/new). |
 | Windows 10/11 (x64) | **Preview.** Installer with each release; built and tested in CI. Known gaps: graceful Stop (Force quit works), WinGet packages, GPU details. [Reports welcome](https://github.com/HMAKT99/Agasthy/issues/new). |
-| Linux (x64) | **Preview.** AppImage and `.deb` with each release; built in CI and launch-tested on Ubuntu. Not yet: GPU details. [Reports welcome](https://github.com/HMAKT99/Agasthy/issues/new). |
+| Linux (x64) | **Preview.** AppImage and `.deb` with each release; built in CI and launch-tested on Ubuntu. On Arch-based systems (Omarchy, Manjaro) it reads the pacman database; not yet tested on Arch. Not yet: GPU details. [Reports welcome](https://github.com/HMAKT99/Agasthy/issues/new). |
 | Linux (ARM64) | **Preview.** AppImage, `.deb` and CLI with each release; built in CI, not yet launch-tested. |
 
 ## Everything it does

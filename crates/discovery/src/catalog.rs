@@ -69,6 +69,9 @@ pub const TOOLS: &[ToolSpec] = &[
     t("winget", "WinGet", PackageManager, V),
     t("scoop", "Scoop", PackageManager, None),
     t("choco", "Chocolatey", PackageManager, V),
+    t("pacman", "pacman", PackageManager, V),
+    t("yay", "yay", PackageManager, V),
+    t("paru", "paru", PackageManager, V),
     // Version control
     t("git", "Git", VersionControl, V),
     t("gh", "GitHub CLI", VersionControl, V),

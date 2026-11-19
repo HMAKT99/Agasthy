@@ -46,7 +46,7 @@ claude mcp add agasthy -- agasthy mcp     # 让 Claude Code 也能查询这台�
 
 | | |
 |---|---|
-| 📦 **全面发现** | Git 仓库（分支、未提交的改动、远程地址、重复克隆）、应用、命令行工具和运行时（哪个版本真正生效，哪些被遮蔽），以及 Homebrew、npm、pnpm、uv、pip、cargo 安装的包。每条信息都附带证据。 |
+| 📦 **全面发现** | Git 仓库（分支、未提交的改动、远程地址、重复克隆）、应用、命令行工具和运行时（哪个版本真正生效，哪些被遮蔽），以及 Homebrew、npm、pnpm、uv、pip、cargo 安装的包（Linux 上还有 pacman、Flatpak 和 Snap）。每条信息都附带证据。 |
 | 🕸️ **机器的知识图谱** | 项目、运行时、依赖、软件包、工具和 AI 配置互相关联。哪些项目共用一个依赖、谁依赖谁，一目了然。 |
 | 💥 **影响分析** | 对任意软件包、运行时或工具回答“删掉它会坏什么？”，全程只模拟、不执行。依赖升级可以先在隔离的 Update Lab 里试。 |
 | 🤖 **编程助手，实时可见** | Claude Code、Codex、Copilot CLI、Gemini CLI、Cursor、Aider、Hermes、OpenClaw 的每个会话：内存、端口、MCP 服务器和 dev server。助手退出后留下的服务，AGASTHY 会告诉你是哪个会话启动的，确认后一步停止。 |
@@ -161,7 +161,7 @@ AGASTHY 常驻菜单栏：关闭窗口后它仍在运行，**退出**在菜单�
 | macOS 12+（Apple 芯片） | **正式支持。** 在 macOS 15 / M2 上构建和测试。 |
 | macOS（Intel） | **预览版。** 通用版应用和 CLI 包含 Intel；在 CI 中构建，尚未在 Intel Mac 上测试。[欢迎反馈](https://github.com/HMAKT99/Agasthy/issues/new)。 |
 | Windows 10/11（x64） | **预览版。** 每个版本都提供安装包，在 CI 中构建和测试。已知不足：优雅停止进程（强制退出可用）、WinGet 软件包、GPU 信息。[欢迎反馈](https://github.com/HMAKT99/Agasthy/issues/new)。 |
-| Linux（x64） | **预览版。** 每个版本都提供 AppImage 和 `.deb`，在 CI 中构建并在 Ubuntu 上做启动测试。暂不支持：GPU 信息。[欢迎反馈](https://github.com/HMAKT99/Agasthy/issues/new)。 |
+| Linux（x64） | **预览版。** 每个版本都提供 AppImage 和 `.deb`，在 CI 中构建并在 Ubuntu 上做启动测试。在 Arch 系发行版（Omarchy、Manjaro）上读取 pacman 数据库；尚未在 Arch 上测试。暂不支持：GPU 信息。[欢迎反馈](https://github.com/HMAKT99/Agasthy/issues/new)。 |
 | Linux（ARM64） | **预览版。** 每个版本都提供 AppImage、`.deb` 和 CLI；在 CI 中构建，尚未做启动测试。 |
 
 ## 更多
