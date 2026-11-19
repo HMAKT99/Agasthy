@@ -15,10 +15,13 @@
     $url   = "https://github.com/HMAKT99/Agasthy/releases/latest/download/$asset"
     $dir   = Join-Path $env:LOCALAPPDATA 'Programs\agasthy-cli'
 
-    if (-not [Environment]::Is64BitOperatingSystem -or $env:PROCESSOR_ARCHITECTURE -eq 'ARM64') {
-        Write-Host 'AGASTHY CLI currently ships for 64-bit x86 Windows only.' -ForegroundColor Red
+    if (-not [Environment]::Is64BitOperatingSystem) {
+        Write-Host 'AGASTHY CLI needs 64-bit Windows.' -ForegroundColor Red
         return
     }
+    # Windows 11 on ARM runs x64 programs through its built-in emulation.
+    $arm = ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') -or ($env:PROCESSOR_ARCHITEW6432 -eq 'ARM64')
+    if ($arm) { Write-Host 'Windows on ARM: installing the x64 build, which runs under Windows'' x64 emulation.' }
 
     $tmp = Join-Path ([IO.Path]::GetTempPath()) ("agasthy-" + [Guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Path $tmp | Out-Null

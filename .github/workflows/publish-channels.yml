@@ -1,4 +1,4 @@
-name: Publish to Homebrew and the MCP Registry
+name: Publish to Homebrew, the MCP Registry and winget
 
 # When a release is published (not a draft, not a prerelease):
 #  * MCP Registry: publishes io.github.HMAKT99/agasthy at the release version,
@@ -8,6 +8,12 @@ name: Publish to Homebrew and the MCP Registry
 #    the release and pushes. Needs the secret HOMEBREW_TAP_DEPLOY_KEY: the private
 #    half of a write-enabled deploy key on HMAKT99/homebrew-tap (it can push to
 #    that repository only). Without it, this job is skipped with a warning.
+#  * winget (Windows): opens a pull request on microsoft/winget-pkgs with the
+#    manifests from scripts/winget-manifests.py, so `winget install HMAKT99.AGASTHY`
+#    works and installs without the SmartScreen prompt. Needs the secret
+#    WINGET_TOKEN (a classic GitHub token with public_repo scope, for the account
+#    that owns the fork wingetcreate uses). Without it, this job is skipped with a
+#    warning; adding the secret is the decision to start publishing there.
 # Run it by hand with a tag to redo it.
 
 on:
@@ -117,3 +123,42 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "agasthy $v, agasthy-cli $v"
           git push origin HEAD
+
+  winget:
+    name: winget
+    if: github.event_name == 'workflow_dispatch' || !github.event.release.prerelease
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    env:
+      WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+    steps:
+      - name: Check for the winget token
+        id: token
+        shell: bash
+        run: |
+          if [ -z "$WINGET_TOKEN" ]; then
+            echo "::warning::WINGET_TOKEN is not set; winget is not updated (see this workflow's header)."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.token.outputs.ok == 'true'
+      - name: Write the manifests
+        if: steps.token.outputs.ok == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "not a release tag: $TAG"; exit 1; }
+          v="${TAG#v}"
+          sha=$(gh release download "$TAG" -p "AGASTHY_${v}_x64-setup.exe.sha256" -O - | cut -c1-64)
+          python scripts/winget-manifests.py "$v" "$sha" winget
+      - name: Submit to winget-pkgs
+        if: steps.token.outputs.ok == 'true'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
+          ./wingetcreate.exe submit --token $env:WINGET_TOKEN --prtitle "New version: HMAKT99.AGASTHY $($env:TAG.TrimStart('v'))" winget
