@@ -25,10 +25,10 @@ metadata:
               "id": "download-macos",
               "kind": "download",
               "os": ["darwin"],
-              "url": "https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-macos-aarch64.tar.gz",
+              "url": "https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-macos-universal.tar.gz",
               "archive": "tar.gz",
               "bins": ["agasthy"],
-              "label": "Download the AGASTHY CLI (macOS, Apple silicon)",
+              "label": "Download the AGASTHY CLI (macOS, Apple silicon and Intel)",
             },
             {
               "id": "download-linux",
@@ -59,7 +59,7 @@ metadata:
 
 ## If `agasthy` is not installed
 
-OpenClaw offers to download it. Elsewhere, tell the user to download the archive for their system from https://github.com/HMAKT99/Agasthy/releases/latest (`agasthy-cli-macos-aarch64.tar.gz`, `agasthy-cli-linux-x86_64.tar.gz` or `agasthy-cli-windows-x86_64.zip`), unpack it, and put `agasthy` on their PATH. Each archive has a `.sha256` checksum next to it. Do not download or install it yourself unless they ask.
+OpenClaw offers to download it. On ARM Linux, or for a one-line install on macOS or Linux, the user can run `curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | sh -s -- --cli-only`. Elsewhere, tell the user to download the archive for their system from https://github.com/HMAKT99/Agasthy/releases/latest (`agasthy-cli-macos-universal.tar.gz`, `agasthy-cli-linux-x86_64.tar.gz`, `agasthy-cli-linux-aarch64.tar.gz` for ARM Linux, or `agasthy-cli-windows-x86_64.zip`), unpack it, and put `agasthy` on their PATH. Each archive has a `.sha256` checksum next to it. Do not download or install it yourself unless they ask.
 
 ## How to answer
 

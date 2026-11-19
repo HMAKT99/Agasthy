@@ -34,7 +34,7 @@ mkdir -p ~/.openclaw/skills/agasthy
 curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/skills/agasthy/SKILL.md -o ~/.openclaw/skills/agasthy/SKILL.md
 ```
 
-OpenClaw then offers to download the `agasthy` tool for your system (macOS Apple silicon, Linux x64, Windows x64).
+OpenClaw then offers to download the `agasthy` tool for your system (macOS Apple silicon and Intel, Linux x64, Windows x64).
 
 **Hermes**
 
@@ -52,10 +52,10 @@ curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/skills/agasthy
 For Hermes, Claude Code and others, install the `agasthy` tool yourself: download `agasthy-cli-<system>` from the [latest release](https://github.com/HMAKT99/Agasthy/releases/latest), check it against the `.sha256` file next to it, unpack it, and put `agasthy` on your PATH. On macOS:
 
 ```bash
-cd /tmp && curl -fsSLO https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-macos-aarch64.tar.gz \
-  && curl -fsSLO https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-macos-aarch64.tar.gz.sha256 \
-  && shasum -a 256 -c agasthy-cli-macos-aarch64.tar.gz.sha256 \
-  && mkdir -p ~/.local/bin && tar -C ~/.local/bin -xzf agasthy-cli-macos-aarch64.tar.gz \
+cd /tmp && curl -fsSLO https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-macos-universal.tar.gz \
+  && curl -fsSLO https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-macos-universal.tar.gz.sha256 \
+  && shasum -a 256 -c agasthy-cli-macos-universal.tar.gz.sha256 \
+  && mkdir -p ~/.local/bin && tar -C ~/.local/bin -xzf agasthy-cli-macos-universal.tar.gz \
   && ~/.local/bin/agasthy --version
 ```
 
