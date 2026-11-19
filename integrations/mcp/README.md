@@ -27,10 +27,10 @@ brew install hmakt99/tap/agasthy-cli
 The path is then `$(brew --prefix)/bin/agasthy` (`/opt/homebrew/bin/agasthy` on Apple silicon). Or download `agasthy-cli-<system>` from the [latest release](https://github.com/HMAKT99/Agasthy/releases/latest), check it against the `.sha256` file next to it, and unpack it. On macOS (Apple silicon):
 
 ```bash
-cd /tmp && curl -fsSLO https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-macos-aarch64.tar.gz \
-  && curl -fsSLO https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-macos-aarch64.tar.gz.sha256 \
-  && shasum -a 256 -c agasthy-cli-macos-aarch64.tar.gz.sha256 \
-  && mkdir -p ~/.local/bin && tar -C ~/.local/bin -xzf agasthy-cli-macos-aarch64.tar.gz \
+cd /tmp && curl -fsSLO https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-macos-universal.tar.gz \
+  && curl -fsSLO https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-macos-universal.tar.gz.sha256 \
+  && shasum -a 256 -c agasthy-cli-macos-universal.tar.gz.sha256 \
+  && mkdir -p ~/.local/bin && tar -C ~/.local/bin -xzf agasthy-cli-macos-universal.tar.gz \
   && ~/.local/bin/agasthy --version
 ```
 
