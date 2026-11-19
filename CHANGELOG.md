@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.1.10] - 2026-11-19
+
 - **Arch Linux (pacman), for Omarchy, Manjaro and other Arch-based systems:** packages are read from the local pacman database (`pacman -Qi`, read-only, no network), with descriptions, licences, which ones you installed yourself, and dependencies. Dependencies on virtual names and libraries (`sh`, `libreadline.so`) are resolved to the package that provides them, so "what breaks if I remove it" works for pacman packages. AUR helpers `yay` and `paru` are recognised as tools. Not yet tested on Arch itself; reports welcome.
 
 ## [0.1.9] - 2026-11-19
