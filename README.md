@@ -34,7 +34,7 @@ Just want to see what your coding agents are running and what they cost? The com
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | sh -s -- --cli-only
-# or: brew install hmakt99/tap/agasthy-cli
+# or: brew trust hmakt99/tap && brew install hmakt99/tap/agasthy-cli
 agasthy agents                            # live coding-agent sessions and what they left running
 agasthy usage                             # token usage and estimated cost, last 30 days
 claude mcp add agasthy -- agasthy mcp     # let Claude Code ask about this machine (read-only)
@@ -132,6 +132,7 @@ Open it and drag **AGASTHY** to **Applications**. The first time, macOS says it 
 Or with [Homebrew](https://brew.sh) (the same one-time **Open Anyway** applies):
 
 ```bash
+brew trust hmakt99/tap                     # once: Homebrew 7 asks you to trust third-party taps
 brew install --cask hmakt99/tap/agasthy     # the app
 brew install hmakt99/tap/agasthy-cli        # optional: the read-only CLI and MCP server for agents
 ```
