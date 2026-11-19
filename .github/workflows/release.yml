@@ -247,9 +247,62 @@ jobs:
           path: dist/*
           if-no-files-found: error
 
+  linux-arm:
+    name: Linux (ARM64, preview)
+    # Native ARM runner; the oldest one, so the AppImage runs on older distributions too.
+    runs-on: ubuntu-22.04-arm
+    # A new build: if it fails, the release still ships (without the ARM files).
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: System libraries for Tauri
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev build-essential patchelf file
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build AppImage and .deb with signed update file
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          v=$(node -p "require('./apps/desktop/src-tauri/tauri.conf.json').version")
+          pnpm tauri build --bundles appimage,deb
+          mkdir -p dist
+          img=$(ls target/release/bundle/appimage/*.AppImage | head -1)
+          deb=$(ls target/release/bundle/deb/*.deb | head -1)
+          test -f "$img" && test -f "$img.sig" && test -f "$deb"
+          cp "$img" "dist/AGASTHY_${v}_aarch64.AppImage"
+          cp "$img.sig" "dist/AGASTHY_${v}_aarch64.AppImage.sig"
+          cp "$deb" "dist/agasthy_${v}_arm64.deb"
+          (cd dist && sha256sum "AGASTHY_${v}_aarch64.AppImage" > "AGASTHY_${v}_aarch64.AppImage.sha256" && sha256sum "agasthy_${v}_arm64.deb" > "agasthy_${v}_arm64.deb.sha256")
+
+      - name: Command-line tool (for agents and scripts)
+        run: |
+          cargo build --release -p agasthy-cli
+          mkdir -p cli && cp target/release/agasthy cli/
+          tar -C cli -czf dist/agasthy-cli-linux-aarch64.tar.gz agasthy
+          (cd dist && sha256sum agasthy-cli-linux-aarch64.tar.gz > agasthy-cli-linux-aarch64.tar.gz.sha256)
+          mkdir -p check && tar -C check -xzf dist/agasthy-cli-linux-aarch64.tar.gz && ./check/agasthy --version
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-arm
+          path: dist/*
+          if-no-files-found: error
+
   publish:
     name: Draft release
-    needs: [macos, windows, linux]
+    needs: [macos, windows, linux, linux-arm]
+    # The ARM Linux build is a preview: publish without it if it failed.
+    if: ${{ !cancelled() && needs.macos.result == 'success' && needs.windows.result == 'success' && needs.linux.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -284,7 +337,7 @@ jobs:
 
           **macOS (Apple silicon and Intel, macOS 12+):** download `AGASTHY-…-macos-universal.dmg` and drag AGASTHY to Applications. The first time, macOS says it cannot verify the developer (the app is not notarized by Apple yet): click **Done** (not *Move to Trash*), open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**.
 
-          **Linux (x64, preview):** download `AGASTHY_…_amd64.AppImage`, make it executable (`chmod +x`) and run it, or install `agasthy_…_amd64.deb` with `sudo apt install ./agasthy_…_amd64.deb`.
+          **Linux (x64 and ARM64, preview):** download `AGASTHY_…_amd64.AppImage` (ARM64: `…_aarch64.AppImage`), make it executable (`chmod +x`) and run it, or install `agasthy_…_amd64.deb` (ARM64: `…_arm64.deb`) with `sudo apt install ./agasthy_….deb`.
 
           **Command-line tool and agent skill:** `agasthy-cli-…` lets coding agents and scripts query what AGASTHY found (read-only, JSON). For OpenClaw, Hermes and Claude Code, install the AGASTHY skill: see [integrations/agent-skill](https://github.com/HMAKT99/Agasthy/tree/main/integrations/agent-skill).
 
