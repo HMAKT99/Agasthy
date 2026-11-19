@@ -10,7 +10,7 @@ checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
 
 [[package]]
 name = "agasthy-actions"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "agasthy-cleanup",
  "agasthy-core",
@@ -25,7 +25,7 @@ dependencies = [
 
 [[package]]
 name = "agasthy-ai"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "agasthy-core",
  "agasthy-platform",
@@ -38,7 +38,7 @@ dependencies = [
 
 [[package]]
 name = "agasthy-cleanup"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "agasthy-core",
  "agasthy-platform",
@@ -51,7 +51,7 @@ dependencies = [
 
 [[package]]
 name = "agasthy-cli"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "agasthy-cleanup",
  "agasthy-core",
@@ -69,7 +69,7 @@ dependencies = [
 
 [[package]]
 name = "agasthy-core"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "rusqlite",
  "serde",
@@ -81,7 +81,7 @@ dependencies = [
 
 [[package]]
 name = "agasthy-desktop"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "agasthy-actions",
  "agasthy-ai",
@@ -110,7 +110,7 @@ dependencies = [
 
 [[package]]
 name = "agasthy-discovery"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "agasthy-core",
  "agasthy-platform",
@@ -127,7 +127,7 @@ dependencies = [
 
 [[package]]
 name = "agasthy-graph"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "agasthy-core",
  "serde",
@@ -137,7 +137,7 @@ dependencies = [
 
 [[package]]
 name = "agasthy-platform"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "agasthy-core",
  "dirs",
@@ -152,7 +152,7 @@ dependencies = [
 
 [[package]]
 name = "agasthy-process"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "agasthy-core",
  "agasthy-discovery",
@@ -165,7 +165,7 @@ dependencies = [
 
 [[package]]
 name = "agasthy-provenance"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "agasthy-core",
  "serde",
@@ -174,7 +174,7 @@ dependencies = [
 
 [[package]]
 name = "agasthy-security"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "agasthy-core",
  "agasthy-platform",
@@ -186,7 +186,7 @@ dependencies = [
 
 [[package]]
 name = "agasthy-snapshots"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "agasthy-core",
  "serde",
@@ -197,7 +197,7 @@ dependencies = [
 
 [[package]]
 name = "agasthy-system-monitor"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "agasthy-core",
  "serde",
@@ -207,7 +207,7 @@ dependencies = [
 
 [[package]]
 name = "agasthy-update-lab"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "agasthy-core",
  "agasthy-platform",

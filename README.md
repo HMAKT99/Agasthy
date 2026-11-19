@@ -123,7 +123,7 @@ It downloads the latest release from GitHub, checks it against the published SHA
 >
 > You only do this once; updates install without it. To check a download yourself, compare it with the `.sha256` file next to it on the release page (`shasum -a 256 <file>` on macOS, `Get-FileHash <file>` on Windows, `sha256sum <file>` on Linux).
 
-**macOS (Apple silicon, macOS 12+)**
+**macOS (Apple silicon and Intel, macOS 12+)**
 
 **[⬇ Download AGASTHY for macOS (Apple silicon)](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/AGASTHY-0.1.8-apple-silicon.dmg)**
 
@@ -161,9 +161,10 @@ AGASTHY lives in the menu bar: closing the window keeps it running, and **Quit**
 | Platform | Status |
 |---|---|
 | macOS 12+ (Apple silicon) | **Supported.** Built and tested on macOS 15 / M2. |
-| macOS (Intel) | Expected to work from source; not tested, no download yet. |
+| macOS (Intel) | **Preview.** The universal app and CLI include Intel; built in CI, not yet tested on an Intel Mac. [Reports welcome](https://github.com/HMAKT99/Agasthy/issues/new). |
 | Windows 10/11 (x64) | **Preview.** Installer with each release; built and tested in CI. Known gaps: graceful Stop (Force quit works), WinGet packages, GPU details. [Reports welcome](https://github.com/HMAKT99/Agasthy/issues/new). |
 | Linux (x64) | **Preview.** AppImage and `.deb` with each release; built in CI and launch-tested on Ubuntu. Not yet: GPU details. [Reports welcome](https://github.com/HMAKT99/Agasthy/issues/new). |
+| Linux (ARM64) | **Preview.** AppImage, `.deb` and CLI with each release; built in CI, not yet launch-tested. |
 
 ## Everything it does
 

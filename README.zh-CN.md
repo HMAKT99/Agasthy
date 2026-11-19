@@ -121,7 +121,7 @@ curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | s
 >
 > 只需要做一次，之后的更新不会再提示。想自己校验下载文件，可以和发布页上同名的 `.sha256` 文件比对（macOS 用 `shasum -a 256 <文件>`，Windows 用 `Get-FileHash <文件>`，Linux 用 `sha256sum <文件>`）。
 
-**macOS（Apple 芯片，macOS 12+）**
+**macOS（Apple 芯片和 Intel，macOS 12+）**
 
 **[⬇ 下载 macOS 版（Apple 芯片）](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/AGASTHY-0.1.8-apple-silicon.dmg)**
 
@@ -159,9 +159,10 @@ AGASTHY 常驻菜单栏：关闭窗口后它仍在运行，**退出**在菜单�
 | 平台 | 状态 |
 |---|---|
 | macOS 12+（Apple 芯片） | **正式支持。** 在 macOS 15 / M2 上构建和测试。 |
-| macOS（Intel） | 预计可以从源码构建运行；未测试，暂无下载。 |
+| macOS（Intel） | **预览版。** 通用版应用和 CLI 包含 Intel；在 CI 中构建，尚未在 Intel Mac 上测试。[欢迎反馈](https://github.com/HMAKT99/Agasthy/issues/new)。 |
 | Windows 10/11（x64） | **预览版。** 每个版本都提供安装包，在 CI 中构建和测试。已知不足：优雅停止进程（强制退出可用）、WinGet 软件包、GPU 信息。[欢迎反馈](https://github.com/HMAKT99/Agasthy/issues/new)。 |
 | Linux（x64） | **预览版。** 每个版本都提供 AppImage 和 `.deb`，在 CI 中构建并在 Ubuntu 上做启动测试。暂不支持：GPU 信息。[欢迎反馈](https://github.com/HMAKT99/Agasthy/issues/new)。 |
+| Linux（ARM64） | **预览版。** 每个版本都提供 AppImage、`.deb` 和 CLI；在 CI 中构建，尚未做启动测试。 |
 
 ## 更多
 

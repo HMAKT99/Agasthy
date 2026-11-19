@@ -2,7 +2,7 @@
 name: agasthy
 description: Answer questions about this developer machine with real data from AGASTHY - repositories and their uncommitted work, installed runtimes, packages and tools, which process holds a port, which coding-agent sessions are running and what they left behind, token usage and estimated cost per agent, and what would break if a package were removed. Use when the user asks about their own machine, projects, ports, disk, packages, coding agents or token spend, or before suggesting they uninstall something.
 homepage: https://github.com/HMAKT99/Agasthy
-version: 0.1.8
+version: 0.1.9
 license: Apache-2.0
 platforms: [macos, linux, windows]
 metadata:
