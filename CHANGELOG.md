@@ -4,6 +4,9 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+- **One-line install for macOS and Linux:** `curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | sh`. It checks every download against its published SHA-256, needs no admin rights, and installs without macOS's "could not verify" prompt. `--cli` also installs the command-line tool, and `--cli-only` installs just that.
+- **Clearer first-launch help** in the README and release notes for anyone installing from the files.
+
 ## [0.1.8] - 2026-11-18
 
 - **Updates when a copy can't update itself:** if the start-up check fails for a reason other than the network (for example the app runs from the mounted DMG, a deleted folder or a read-only location), a banner now says so and opens the download page. Network failures stay quiet.
