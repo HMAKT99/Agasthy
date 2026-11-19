@@ -15,9 +15,9 @@ free disk space safely, and ask plain questions about your machine with evidence
 </p>
 
 <p align="center">
-  <a href="https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/AGASTHY-0.1.8-apple-silicon.dmg"><strong>⬇ Download for Mac (Apple silicon)</strong></a> ·
-  <a href="https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/AGASTHY_0.1.8_x64-setup.exe">⬇ Windows preview</a> ·
-  <a href="https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/AGASTHY_0.1.8_amd64.AppImage">⬇ Linux preview</a> ·
+  <a href="https://github.com/HMAKT99/Agasthy/releases/download/v0.1.9/AGASTHY-0.1.9-macos-universal.dmg"><strong>⬇ Download for Mac (Apple silicon and Intel)</strong></a> ·
+  <a href="https://github.com/HMAKT99/Agasthy/releases/download/v0.1.9/AGASTHY_0.1.9_x64-setup.exe">⬇ Windows preview</a> ·
+  <a href="https://github.com/HMAKT99/Agasthy/releases/download/v0.1.9/AGASTHY_0.1.9_amd64.AppImage">⬇ Linux preview</a> ·
   free and open source · no account · no telemetry
 </p>
 
@@ -125,7 +125,7 @@ It downloads the latest release from GitHub, checks it against the published SHA
 
 **macOS (Apple silicon and Intel, macOS 12+)**
 
-**[⬇ Download AGASTHY for macOS (Apple silicon)](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/AGASTHY-0.1.8-apple-silicon.dmg)**
+**[⬇ Download AGASTHY for macOS (Apple silicon and Intel)](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.9/AGASTHY-0.1.9-macos-universal.dmg)**
 
 Open it and drag **AGASTHY** to **Applications**. The first time, macOS says it cannot verify the developer (the app is not notarized yet): click **Done** (not *Move to Trash*), then **System Settings → Privacy & Security → Open Anyway**. Then scan your code folder.
 
@@ -136,23 +136,23 @@ brew install --cask hmakt99/tap/agasthy     # the app
 brew install hmakt99/tap/agasthy-cli        # optional: the read-only CLI and MCP server for agents
 ```
 
-Using a coding agent without Homebrew? Get [⬇ the CLI](https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-macos-aarch64.tar.gz) (unpack it and put `agasthy` on your PATH) or [⬇ the Claude Desktop extension](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/agasthy-mcp-0.1.8.mcpb) (double-click it).
+Using a coding agent without Homebrew? Get [⬇ the CLI](https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-macos-universal.tar.gz) (unpack it and put `agasthy` on your PATH) or [⬇ the Claude Desktop extension](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.9/agasthy-mcp-0.1.9.mcpb) (double-click it).
 
 **Windows (x64, preview)**
 
-**[⬇ Download AGASTHY for Windows (x64)](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/AGASTHY_0.1.8_x64-setup.exe)**
+**[⬇ Download AGASTHY for Windows (x64)](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.9/AGASTHY_0.1.9_x64-setup.exe)**
 
 Run it. Windows says "Windows protected your PC" because the installer is not code-signed yet: **More info → Run anyway**. Then scan your code folder.
 
-Using a coding agent? Also get [⬇ the CLI](https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-windows-x86_64.zip) (Claude Code, Cursor, Codex; unzip it and put `agasthy.exe` on your PATH) or [⬇ the Claude Desktop extension](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/agasthy-mcp-0.1.8.mcpb) (double-click it).
+Using a coding agent? Also get [⬇ the CLI](https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-windows-x86_64.zip) (Claude Code, Cursor, Codex; unzip it and put `agasthy.exe` on your PATH) or [⬇ the Claude Desktop extension](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.9/agasthy-mcp-0.1.9.mcpb) (double-click it).
 
 **Linux (x64, preview)**
 
-**[⬇ Download AppImage (any distribution)](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/AGASTHY_0.1.8_amd64.AppImage)** · **[⬇ Download .deb (Ubuntu, Debian)](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/agasthy_0.1.8_amd64.deb)**
+**[⬇ Download AppImage (any distribution)](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.9/AGASTHY_0.1.9_amd64.AppImage)** · **[⬇ Download .deb (Ubuntu, Debian)](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.9/agasthy_0.1.9_amd64.deb)**
 
 AppImage: `chmod +x AGASTHY_*_amd64.AppImage` and run it. .deb: `sudo apt install ./agasthy_*_amd64.deb`. Then scan your code folder. Built and launch-tested in CI on Ubuntu; feedback from other distributions welcome.
 
-Using a coding agent? Also get [⬇ the CLI](https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-linux-x86_64.tar.gz) (unpack it and put `agasthy` on your PATH) or [⬇ the Claude Desktop extension](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/agasthy-mcp-0.1.8.mcpb).
+Using a coding agent? Also get [⬇ the CLI](https://github.com/HMAKT99/Agasthy/releases/latest/download/agasthy-cli-linux-x86_64.tar.gz) (unpack it and put `agasthy` on your PATH) or [⬇ the Claude Desktop extension](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.9/agasthy-mcp-0.1.9.mcpb).
 
 AGASTHY lives in the menu bar: closing the window keeps it running, and **Quit** is in the menu-bar menu. Updates are offered in the app, signature-checked, and installed only when you click **Install and restart**.
 
