@@ -7,6 +7,34 @@ test("outside the desktop shell, no machine data is shown", async ({ page }) => 
   await expect(page.getByRole("navigation", { name: "Main" })).toHaveCount(0);
 });
 
+test("a fresh install offers one scan of the machine first", async ({ page }) => {
+  await installFixtureIpc(page);
+  // A machine AGASTHY has never scanned (the fixture already has a project folder added): record which scans start.
+  await page.addInitScript(() => {
+    const w = window as unknown as { __AGASTHY_TEST_IPC__: (c: string, a?: Record<string, unknown>) => Promise<unknown>; __scans: string[] };
+    const base = w.__AGASTHY_TEST_IPC__;
+    w.__scans = [];
+    w.__AGASTHY_TEST_IPC__ = async (cmd, args) => {
+      if (cmd === "run_scan") {
+        w.__scans.push(String(args?.kind));
+        return { kind: args?.kind, status: "ok" };
+      }
+      const r = await base(cmd, args);
+      if (cmd === "overview") return { ...(r as object), latest_scans: [] };
+      return r;
+    };
+  });
+  await page.goto("/#/");
+  const panel = page.getByText("Let AGASTHY look at this machine");
+  await expect(panel).toBeVisible();
+  // Above everything else on the page.
+  const panelTop = (await panel.boundingBox())!.y;
+  const insightsTop = (await page.getByRole("list", { name: "Insights" }).boundingBox())!.y;
+  expect(panelTop).toBeLessThan(insightsTop);
+  await page.getByRole("button", { name: "Scan this machine" }).click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __scans: string[] }).__scans)).toEqual(["packages", "software", "ai", "repositories"]);
+});
+
 test.describe("with the fixture backend", () => {
   test.beforeEach(async ({ page }) => {
     await installFixtureIpc(page);

@@ -45,6 +45,8 @@ export function OverviewPage() {
         }
       />
       <div className="flex flex-col gap-4 p-5">
+        {/* First thing a new user sees: one click to look at the machine. */}
+        {overview.data && overview.data.latest_scans.length === 0 ? <FirstRun hasRoots={hasRoots} /> : null}
         <InsightsPanel />
         <ResourcesPanel telemetry={telemetry.data} error={telemetry.error} />
         {overview.isLoading ? (
@@ -53,7 +55,6 @@ export function OverviewPage() {
           <StateView kind="error" title="Could not read discovery data" description={errorMessage(overview.error)} />
         ) : overview.data ? (
           <>
-            {overview.data.latest_scans.length === 0 ? <FirstRun /> : null}
             <EnvironmentPanel counts={overview.data.counts} dirty={overview.data.dirty_repositories} dupes={overview.data.duplicate_clone_links} roots={overview.data.scan_roots} />
             <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
               <ProcessesPanel telemetry={telemetry.data} />
@@ -76,25 +77,38 @@ export function OverviewPage() {
   );
 }
 
-function FirstRun() {
+/**
+ * Shown until the first scan: one click scans installed software and the AI
+ * setup (agents, MCP servers, instruction files), which needs no folders, so
+ * the Overview, Agent Map and AI pages fill in straight away. Project folders
+ * stay a separate, explicit choice.
+ */
+function FirstRun({ hasRoots }: { hasRoots: boolean }) {
   const nav = useNavigate();
   const activity = useScanActivity();
+  const busy = activity.running.size > 0;
+  const scanMachine = async () => {
+    await activity.startInventory();
+    await activity.start("ai");
+    if (hasRoots) await activity.start("repositories");
+  };
   return (
     <Panel>
       <div className="flex flex-col items-start gap-3 py-2 md:flex-row md:items-center md:justify-between">
         <div>
-          <div className="text-[13.5px] font-medium text-fg">AGASTHY has not looked at this machine yet</div>
+          <div className="text-[13.5px] font-medium text-fg">Let AGASTHY look at this machine</div>
           <p className="mt-1 max-w-2xl text-[12.5px] leading-5 text-muted">
-            Software discovery reads application bundles, catalogued developer tools on your PATH and package-manager inventories. Repository
-            discovery only looks inside folders you choose. Nothing leaves this machine.
+            One scan finds your applications, developer tools, packages and AI setup: coding agents, MCP servers and instruction files. It only reads,
+            takes about a minute, and nothing leaves this machine. Project folders are scanned only once you choose them.
           </p>
         </div>
         <div className="flex shrink-0 gap-2">
           <Button variant="secondary" onClick={() => void nav({ to: "/settings" })}>
             <FolderPlus aria-hidden /> Choose project folders
           </Button>
-          <Button variant="primary" onClick={() => void activity.startInventory()}>
-            Scan installed software
+          <Button variant="primary" disabled={busy} onClick={() => void scanMachine()}>
+            {busy ? <RefreshCw className="animate-spin" aria-hidden /> : null}
+            {busy ? "Scanning…" : "Scan this machine"}
           </Button>
         </div>
       </div>

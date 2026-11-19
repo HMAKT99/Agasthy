@@ -21,6 +21,8 @@ free disk space safely, and ask plain questions about your machine with evidence
   free and open source · no account · no telemetry
 </p>
 
+<p align="center">Mac or Linux, one line, no security prompt:<br/><code>curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | sh</code></p>
+
 https://github.com/user-attachments/assets/2718c8ae-1576-4c4f-a494-646731a019fa
 
 
@@ -31,7 +33,8 @@ https://github.com/user-attachments/assets/2718c8ae-1576-4c4f-a494-646731a019fa
 Just want to see what your coding agents are running and what they cost? The command-line tool is enough:
 
 ```bash
-brew install hmakt99/tap/agasthy-cli      # macOS / Linux
+curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | sh -s -- --cli-only
+# or: brew install hmakt99/tap/agasthy-cli
 agasthy agents                            # live coding-agent sessions and what they left running
 agasthy usage                             # token usage and estimated cost, last 30 days
 claude mcp add agasthy -- agasthy mcp     # let Claude Code ask about this machine (read-only)
@@ -102,10 +105,19 @@ Setup for each client: [integrations/mcp](integrations/mcp).
 
 ## Install
 
+**The quickest way, on macOS or Linux** (no security prompt, checksum-verified, no admin rights):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | sh            # the app
+curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | sh -s -- --cli # the app and the CLI
+```
+
+It downloads the latest release from GitHub, checks it against the published SHA-256, and installs AGASTHY in Applications (Linux: `~/Applications/AGASTHY.AppImage`). Read [install.sh](install.sh) first if you like; nothing is installed if a checksum does not match.
+
 > [!IMPORTANT]
-> **Expect one security prompt on first launch.** AGASTHY is not yet signed with a paid Apple Developer ID or a Windows code-signing certificate. That does not mean anything is wrong with the download; it means the operating system cannot check who published it.
+> **Downloading the file yourself? Expect one security prompt on first launch.** AGASTHY is not yet signed with a paid Apple Developer ID or a Windows code-signing certificate. That does not mean anything is wrong with the download; it means the operating system cannot check who published it. The one-line install above avoids the prompt on macOS.
 >
-> - **macOS:** "Apple could not verify AGASTHY is free of malware" → **System Settings → Privacy & Security → Open Anyway**.
+> - **macOS:** "Apple could not verify AGASTHY is free of malware" → click **Done**, then **System Settings → Privacy & Security → Open Anyway**.
 > - **Windows:** "Windows protected your PC" (SmartScreen) → **More info → Run anyway**.
 > - **Linux:** no prompt; just make the AppImage executable.
 >
@@ -115,9 +127,9 @@ Setup for each client: [integrations/mcp](integrations/mcp).
 
 **[⬇ Download AGASTHY for macOS (Apple silicon)](https://github.com/HMAKT99/Agasthy/releases/download/v0.1.8/AGASTHY-0.1.8-apple-silicon.dmg)**
 
-Open it and drag **AGASTHY** to **Applications**. The first time, macOS says it cannot verify the developer (the app is not notarized yet): **System Settings → Privacy & Security → Open Anyway**. Then scan your code folder.
+Open it and drag **AGASTHY** to **Applications**. The first time, macOS says it cannot verify the developer (the app is not notarized yet): click **Done** (not *Move to Trash*), then **System Settings → Privacy & Security → Open Anyway**. Then scan your code folder.
 
-Or with [Homebrew](https://brew.sh):
+Or with [Homebrew](https://brew.sh) (the same one-time **Open Anyway** applies):
 
 ```bash
 brew install --cask hmakt99/tap/agasthy     # the app
