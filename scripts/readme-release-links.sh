@@ -30,9 +30,22 @@ point "AGASTHY_${v}_x64-setup.exe" \
 point "agasthy-mcp-${v}.mcpb" \
   "releases/download/v${V}/agasthy-mcp-${V}\.mcpb" \
   "releases/download/${tag}/agasthy-mcp-${v}.mcpb"
-point "AGASTHY-${v}-apple-silicon.dmg" \
-  "releases/download/v${V}/AGASTHY-${V}-apple-silicon\.dmg" \
-  "releases/download/${tag}/AGASTHY-${v}-apple-silicon.dmg"
+if grep -qxF "AGASTHY-${v}-macos-universal.dmg" <<<"$assets"; then
+  # One DMG for Apple silicon and Intel: links and their labels say so.
+  point "AGASTHY-${v}-macos-universal.dmg" \
+    "releases/download/v${V}/AGASTHY-${V}-(apple-silicon|macos-universal)\.dmg" \
+    "releases/download/${tag}/AGASTHY-${v}-macos-universal.dmg"
+  for readme in "${readmes[@]}"; do
+    sed -E -i.bak \
+      -e 's#(Download for Mac|Download AGASTHY for macOS) \(Apple silicon\)#\1 (Apple silicon and Intel)#g' \
+      -e 's#(下载 Mac 版|下载 macOS 版)（Apple 芯片）#\1（Apple 芯片和 Intel）#g' \
+      "$readme" && rm -f "$readme.bak"
+  done
+else
+  point "AGASTHY-${v}-apple-silicon.dmg" \
+    "releases/download/v${V}/AGASTHY-${V}-apple-silicon\.dmg" \
+    "releases/download/${tag}/AGASTHY-${v}-apple-silicon.dmg"
+fi
 point "AGASTHY_${v}_amd64.AppImage" \
   "releases/download/v${V}/AGASTHY_${V}_amd64\.AppImage" \
   "releases/download/${tag}/AGASTHY_${v}_amd64.AppImage"

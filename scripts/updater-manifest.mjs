@@ -2,7 +2,8 @@
 // Write dist/latest.json for the in-app updater from the signed update files
 // in dist/ (whatever platforms were built):
 //
-//   macOS:   AGASTHY_<version>_aarch64.app.tar.gz  (+ .sig)
+//   macOS:   AGASTHY_<version>_universal.app.tar.gz (+ .sig), for Apple silicon and Intel;
+//            or AGASTHY_<version>_aarch64.app.tar.gz / _x86_64.app.tar.gz
 //   Windows: AGASTHY_<version>_x64-setup.exe       (+ .sig)
 //   Linux:   AGASTHY_<version>_amd64.AppImage      (+ .sig)
 //
@@ -34,17 +35,20 @@ if (tag !== `v${version}`) {
   process.exit(1);
 }
 
+// For each platform, the first update file that exists (with its .sig) wins.
 const candidates = {
-  "darwin-aarch64": `AGASTHY_${version}_aarch64.app.tar.gz`,
-  "windows-x86_64": `AGASTHY_${version}_x64-setup.exe`,
-  "linux-x86_64": `AGASTHY_${version}_amd64.AppImage`,
+  "darwin-aarch64": [`AGASTHY_${version}_universal.app.tar.gz`, `AGASTHY_${version}_aarch64.app.tar.gz`],
+  "darwin-x86_64": [`AGASTHY_${version}_universal.app.tar.gz`, `AGASTHY_${version}_x86_64.app.tar.gz`],
+  "windows-x86_64": [`AGASTHY_${version}_x64-setup.exe`],
+  "linux-x86_64": [`AGASTHY_${version}_amd64.AppImage`],
+  "linux-aarch64": [`AGASTHY_${version}_aarch64.AppImage`],
 };
 const platforms = {};
-for (const [platform, asset] of Object.entries(candidates)) {
-  const file = join(dist, asset);
-  if (existsSync(file) && existsSync(`${file}.sig`)) {
+for (const [platform, assets] of Object.entries(candidates)) {
+  const asset = assets.find((a) => existsSync(join(dist, a)) && existsSync(join(dist, `${a}.sig`)));
+  if (asset) {
     platforms[platform] = {
-      signature: readFileSync(`${file}.sig`, "utf8").trim(),
+      signature: readFileSync(join(dist, `${asset}.sig`), "utf8").trim(),
       url: `https://github.com/${repo}/releases/download/${tag}/${asset}`,
     };
   }
