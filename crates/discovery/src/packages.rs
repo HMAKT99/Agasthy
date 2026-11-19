@@ -101,6 +101,12 @@ pub fn inventory_command(id: PackageManagerId) -> Option<CommandSpec> {
             CommandSpec::new("snap", &["list", "--unicode=never", "--color=never"])
                 .timeout(Duration::from_secs(30))
         }
+        // `pacman -Qi` reads the local package database only (no sync, no
+        // network, no root). LC_ALL=C keeps the field names in English.
+        PackageManagerId::Pacman => CommandSpec::new("pacman", &["-Qi", "--color", "never"])
+            .env("LC_ALL", "C")
+            .timeout(Duration::from_secs(60))
+            .max_output(64 * 1024 * 1024),
         _ => return None,
     };
     let mut spec = spec;
@@ -134,6 +140,7 @@ pub fn parse_inventory(id: PackageManagerId, stdout: &str) -> Result<Vec<Package
         PackageManagerId::Chocolatey => Ok(parse_choco(stdout)),
         PackageManagerId::Flatpak => Ok(parse_flatpak(stdout)),
         PackageManagerId::Snap => Ok(parse_snap(stdout)),
+        PackageManagerId::Pacman => Ok(parse_pacman(stdout)),
         other => Err(format!(
             "{} inventory is not implemented",
             other.display_name()
@@ -442,6 +449,108 @@ pub fn parse_flatpak(stdout: &str) -> Vec<PackageRecord> {
             Some(rec)
         })
         .collect()
+}
+
+/// `pacman -Qi` (LC_ALL=C): one `Field : value` block per package, blocks
+/// separated by a blank line; a value that wraps continues on indented lines.
+///
+/// "Depends On" names can carry a version constraint (`glibc>=2.38`) or be a
+/// virtual name another package provides (`sh` from bash, `libreadline.so=8-64`
+/// from readline). Each is resolved to the installed package that satisfies
+/// it, so impact analysis follows real packages; names nothing provides are
+/// dropped.
+pub fn parse_pacman(stdout: &str) -> Vec<PackageRecord> {
+    fn bare(token: &str) -> &str {
+        token.split(['<', '>', '=']).next().unwrap_or(token).trim()
+    }
+    fn names(value: &str) -> Vec<String> {
+        if value.trim() == "None" {
+            return Vec::new();
+        }
+        value
+            .split_whitespace()
+            .map(bare)
+            .filter(|n| !n.is_empty())
+            .map(str::to_string)
+            .collect()
+    }
+
+    let mut blocks: Vec<Vec<(String, String)>> = Vec::new();
+    let mut fields: Vec<(String, String)> = Vec::new();
+    for line in stdout.lines() {
+        if line.trim().is_empty() {
+            if !fields.is_empty() {
+                blocks.push(std::mem::take(&mut fields));
+            }
+        } else if line.starts_with(char::is_whitespace) {
+            if let Some((_, v)) = fields.last_mut() {
+                v.push(' ');
+                v.push_str(line.trim());
+            }
+        } else if let Some((k, v)) = line.split_once(':') {
+            fields.push((k.trim().to_string(), v.trim().to_string()));
+        }
+    }
+    if !fields.is_empty() {
+        blocks.push(fields);
+    }
+
+    let mut out = Vec::new();
+    let mut provides: Vec<(String, Vec<String>)> = Vec::new();
+    for block in blocks {
+        let get = |k: &str| {
+            block
+                .iter()
+                .find(|(key, _)| key == k)
+                .map(|(_, v)| v.as_str())
+                .filter(|v| !v.is_empty() && *v != "None")
+        };
+        let Some(name) = get("Name") else { continue };
+        let mut rec = PackageRecord::new(
+            PackageManagerId::Pacman,
+            "package",
+            name,
+            get("Version").map(str::to_string),
+        );
+        rec.attrs.description = get("Description").map(str::to_string);
+        rec.attrs.homepage = get("URL").map(str::to_string);
+        rec.attrs.license = get("Licenses").map(str::to_string);
+        rec.attrs.installed_on_request = get("Install Reason").map(|r| r.starts_with("Explicitly"));
+        rec.attrs.upstream = rec
+            .attrs
+            .homepage
+            .as_deref()
+            .and_then(parse_github_homepage);
+        rec.depends_on = names(get("Depends On").unwrap_or("None"));
+        provides.push((name.to_string(), names(get("Provides").unwrap_or("None"))));
+        out.push(rec);
+    }
+
+    // A real package name wins over a virtual one; among providers, the first listed.
+    let mut provider_of: std::collections::HashMap<String, String> =
+        std::collections::HashMap::new();
+    for (pkg, virtuals) in &provides {
+        for v in virtuals {
+            provider_of.entry(v.clone()).or_insert_with(|| pkg.clone());
+        }
+    }
+    for rec in &out {
+        provider_of.insert(rec.name.clone(), rec.name.clone());
+    }
+    let provider = |dep: &str| provider_of.get(dep).cloned();
+    for rec in &mut out {
+        let mut deps: Vec<String> = Vec::new();
+        for d in &rec.depends_on {
+            if let Some(p) = provider(d)
+                && p != rec.name
+                && !deps.contains(&p)
+            {
+                deps.push(p);
+            }
+        }
+        rec.depends_on = deps;
+    }
+    out
 }
 
 /// `snap list`: whitespace table `Name Version Rev Tracking Publisher Notes`.
@@ -865,6 +974,140 @@ mod tests {
         assert_eq!(snap.len(), 2);
         assert_eq!(snap[0].attrs.package_kind, "base");
         assert_eq!(snap[1].name, "code");
+    }
+
+    #[test]
+    fn pacman_database_parsing() {
+        // Recorded shape of `LC_ALL=C pacman -Qi`, trimmed to the fields used.
+        let out = "\
+Name            : bash
+Version         : 5.2.037-1
+Description     : The GNU Bourne Again shell
+Architecture    : x86_64
+URL             : https://www.gnu.org/software/bash/bash.html
+Licenses        : GPL-3.0-or-later
+Groups          : None
+Provides        : sh
+Depends On      : readline  libreadline.so=8-64  glibc  ncurses
+Optional Deps   : bash-completion: for tab completion
+                  bash-docs: for documentation
+Install Reason  : Installed as a dependency for another package
+
+Name            : readline
+Version         : 8.2.013-1
+Description     : GNU readline library
+URL             : https://tiswww.case.edu/php/chet/readline/rltop.html
+Licenses        : GPL-3.0-or-later
+Provides        : libhistory.so=8-64  libreadline.so=8-64
+Depends On      : glibc  ncurses  libncursesw.so=6-64
+Install Reason  : Installed as a dependency for another package
+
+Name            : glibc
+Version         : 2.40+r16+gaa533d58ff-2
+Description     : GNU C Library
+URL             : https://www.gnu.org/software/libc
+Licenses        : GPL-2.0-or-later  LGPL-2.1-or-later
+Provides        : None
+Depends On      : linux-api-headers>=4.10  tzdata  filesystem
+Install Reason  : Installed as a dependency for another package
+
+Name            : ncurses
+Version         : 6.5-3
+Description     : System V Release 4.0 curses emulation library
+URL             : https://invisible-island.net/ncurses/ncurses.html
+Licenses        : MIT-open-group
+Provides        : libncursesw.so=6-64  libformw.so=6-64
+Depends On      : glibc  gcc-libs
+Install Reason  : Installed as a dependency for another package
+
+Name            : lazygit
+Version         : 0.44.1-1
+Description     : Simple terminal UI for git commands
+URL             : https://github.com/jesseduffield/lazygit
+Licenses        : MIT
+Provides        : None
+Depends On      : git
+                  glibc
+Install Reason  : Explicitly installed
+
+Name            : git
+Version         : 2.47.1-1
+Description     : the fast distributed version control system
+URL             : https://git-scm.com/
+Licenses        : GPL-2.0-only
+Provides        : None
+Depends On      : curl  expat  perl  zlib  glibc
+Install Reason  : Explicitly installed
+";
+        let r = parse_pacman(out);
+        assert_eq!(r.len(), 6);
+        let by = |n: &str| r.iter().find(|p| p.name == n).unwrap();
+
+        let bash = by("bash");
+        assert_eq!(bash.id, "package:pacman:bash");
+        assert_eq!(bash.version.as_deref(), Some("5.2.037-1"));
+        assert_eq!(bash.attrs.installed_on_request, Some(false));
+        assert_eq!(
+            bash.attrs.homepage.as_deref(),
+            Some("https://www.gnu.org/software/bash/bash.html")
+        );
+        // `libreadline.so=8-64` resolves to readline, which is listed once.
+        assert_eq!(bash.depends_on, vec!["readline", "glibc", "ncurses"]);
+
+        // A virtual soname resolves to its provider, not to itself.
+        assert_eq!(by("readline").depends_on, vec!["glibc", "ncurses"]);
+        // Version constraints are stripped; packages not installed are dropped.
+        assert!(by("glibc").depends_on.is_empty());
+        assert_eq!(by("ncurses").depends_on, vec!["glibc"]);
+        assert_eq!(
+            by("glibc").attrs.license.as_deref(),
+            Some("GPL-2.0-or-later  LGPL-2.1-or-later")
+        );
+
+        // A wrapped "Depends On" continues on indented lines.
+        let lazygit = by("lazygit");
+        assert_eq!(lazygit.depends_on, vec!["git", "glibc"]);
+        assert_eq!(lazygit.attrs.installed_on_request, Some(true));
+        assert_eq!(
+            lazygit.attrs.upstream.as_ref().map(|u| u.key()),
+            Some("github.com/jesseduffield/lazygit".to_string())
+        );
+        assert_eq!(by("git").depends_on, vec!["glibc"]);
+
+        assert!(parse_pacman("").is_empty());
+        assert!(parse_pacman("error: something\n").is_empty());
+    }
+
+    /// Runs the real command on an Arch system (CI runs it in an Arch Linux
+    /// container): `cargo test -p agasthy-discovery pacman_on_arch -- --ignored`.
+    #[test]
+    #[ignore = "needs pacman; run on Arch Linux"]
+    fn pacman_on_arch() {
+        let cmd = inventory_command(PackageManagerId::Pacman).unwrap();
+        let mut c = std::process::Command::new("pacman");
+        c.args(["-Qi", "--color", "never"]).env("LC_ALL", "C");
+        let out = c.output().expect("pacman runs");
+        assert!(out.status.success(), "{} failed", cmd.display());
+        let stdout = String::from_utf8(out.stdout).unwrap();
+        let r = parse_pacman(&stdout);
+        let listed = std::process::Command::new("pacman")
+            .arg("-Qq")
+            .output()
+            .unwrap();
+        let count = String::from_utf8_lossy(&listed.stdout).lines().count();
+        assert_eq!(r.len(), count, "every installed package is parsed");
+        let by = |n: &str| r.iter().find(|p| p.name == n).unwrap();
+        assert!(by("glibc").version.is_some());
+        assert!(by("bash").depends_on.contains(&"readline".to_string()));
+        assert!(by("bash").depends_on.contains(&"glibc".to_string()));
+        assert!(by("pacman").attrs.description.is_some());
+        let names: std::collections::HashSet<&str> = r.iter().map(|p| p.name.as_str()).collect();
+        for p in &r {
+            for d in &p.depends_on {
+                assert!(names.contains(d.as_str()), "{} -> {d} is installed", p.name);
+            }
+        }
+        println!("parsed {} pacman packages", r.len());
     }
 
     #[test]

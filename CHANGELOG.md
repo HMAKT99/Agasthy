@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+- **Arch Linux (pacman), for Omarchy, Manjaro and other Arch-based systems:** packages are read from the local pacman database (`pacman -Qi`, read-only, no network), with descriptions, licences, which ones you installed yourself, and dependencies. Dependencies on virtual names and libraries (`sh`, `libreadline.so`) are resolved to the package that provides them, so "what breaks if I remove it" works for pacman packages. AUR helpers `yay` and `paru` are recognised as tools. Not yet tested on Arch itself; reports welcome.
+
 ## [0.1.9] - 2026-11-19
 
 - **You can move the window on macOS** by dragging the top of the sidebar or any page header. Until now the app lacked the permission to start a drag, so the window stayed put. Thanks to @FlorencioJP (#1).

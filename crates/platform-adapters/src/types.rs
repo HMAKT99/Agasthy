@@ -95,6 +95,7 @@ pub enum PackageManagerId {
     Chocolatey,
     Flatpak,
     Snap,
+    Pacman,
 }
 
 impl PackageManagerId {
@@ -112,6 +113,7 @@ impl PackageManagerId {
             PackageManagerId::Chocolatey => "chocolatey",
             PackageManagerId::Flatpak => "flatpak",
             PackageManagerId::Snap => "snap",
+            PackageManagerId::Pacman => "pacman",
         }
     }
 
@@ -129,6 +131,7 @@ impl PackageManagerId {
             PackageManagerId::Chocolatey => "Chocolatey",
             PackageManagerId::Flatpak => "Flatpak",
             PackageManagerId::Snap => "Snap",
+            PackageManagerId::Pacman => "pacman",
         }
     }
 
@@ -147,6 +150,7 @@ impl PackageManagerId {
             PackageManagerId::Chocolatey => "choco",
             PackageManagerId::Flatpak => "flatpak",
             PackageManagerId::Snap => "snap",
+            PackageManagerId::Pacman => "pacman",
         }
     }
 }

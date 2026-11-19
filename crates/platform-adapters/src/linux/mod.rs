@@ -2,7 +2,8 @@
 //!
 //! Implemented and unit-tested, not yet run on Linux hardware: path
 //! resolution, application inventory (`.desktop` entries, including Flatpak and
-//! Snap exports), and Flatpak / Snap package inventory. GPU information
+//! Snap exports), Flatpak / Snap package inventory, and the pacman database
+//! (Arch Linux and derivatives such as Omarchy and Manjaro). GPU information
 //! returns `Unsupported`.
 
 pub mod apps;
@@ -103,7 +104,7 @@ impl Platform for Linux {
 
     fn supported_package_managers(&self) -> Vec<PackageManagerSupport> {
         use PackageManagerId::*;
-        [Homebrew, Npm, Pnpm, Uv, Pip, Cargo, Flatpak, Snap]
+        [Homebrew, Npm, Pnpm, Uv, Pip, Cargo, Flatpak, Snap, Pacman]
             .into_iter()
             .map(|id| PackageManagerSupport {
                 id,

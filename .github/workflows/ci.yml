@@ -42,6 +42,21 @@ jobs:
       - name: Tests
         run: cargo test --workspace
 
+  arch-pacman:
+    # The pacman parser against a real Arch Linux package database (the
+    # system Omarchy and Manjaro are built on), not only recorded samples.
+    name: Arch Linux (pacman)
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Tools
+        run: pacman -Syu --noconfirm --needed git gcc rustup
+      - uses: actions/checkout@v4
+      - name: Rust (the toolchain pinned in rust-toolchain.toml)
+        run: rustup show active-toolchain || rustup toolchain install
+      - name: Parse this system's pacman database
+        run: cargo test -p agasthy-discovery --lib pacman_on_arch -- --ignored --nocapture
+
   frontend:
     name: Frontend
     runs-on: ubuntu-latest
