@@ -209,12 +209,20 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cat > "$RUNNER_TEMP/notes.md" <<'NOTES'
+          ## Install in one line (macOS or Linux, no security prompt)
+
+          ```bash
+          curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | sh
+          ```
+
+          Add `-s -- --cli` after `sh` to also install the command-line tool. The script checks every download against its published SHA-256 and installs nothing if one does not match.
+
           > [!IMPORTANT]
-          > **Please note: expect one security prompt on first launch.** AGASTHY is not yet signed with a paid Apple or Microsoft certificate, so macOS and Windows warn the first time. This is expected; the steps below get past it in one click, and you only do it once. Each file has a `.sha256` checksum next to it, and in-app updates are signature-checked.
+          > **Downloading a file below yourself? Expect one security prompt on first launch.** AGASTHY is not yet signed with a paid Apple or Microsoft certificate, so macOS and Windows warn the first time. This is expected; the steps below get past it in one click, and you only do it once. Each file has a `.sha256` checksum next to it, and in-app updates are signature-checked.
 
-          ## Install
+          ## Install from the files
 
-          **macOS (Apple silicon, macOS 12+):** download `AGASTHY-…-apple-silicon.dmg` and drag AGASTHY to Applications. The first time, macOS says it cannot verify the developer (the app is not notarized by Apple yet): open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**.
+          **macOS (Apple silicon, macOS 12+):** download `AGASTHY-…-apple-silicon.dmg` and drag AGASTHY to Applications. The first time, macOS says it cannot verify the developer (the app is not notarized by Apple yet): click **Done** (not *Move to Trash*), open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**.
 
           **Linux (x64, preview):** download `AGASTHY_…_amd64.AppImage`, make it executable (`chmod +x`) and run it, or install `agasthy_…_amd64.deb` with `sudo apt install ./agasthy_…_amd64.deb`.
 
