@@ -78,7 +78,7 @@ cask = f'''cask "agasthy" do
 {cask_arch}  depends_on macos: :monterey
 
   app "AGASTHY.app"
-{caveats}
+
   zap trash: [
     "~/Library/Application Support/org.agasthy.desktop",
     "~/Library/Caches/org.agasthy.desktop",
@@ -86,15 +86,24 @@ cask = f'''cask "agasthy" do
     "~/Library/Saved Application State/org.agasthy.desktop.savedState",
     "~/Library/WebKit/org.agasthy.desktop",
   ]
-end
+{caveats}end
 '''
 
 base = f"https://github.com/HMAKT99/Agasthy/releases/download/v{version}"
 universal_cli = sha("agasthy-cli-macos-universal.tar.gz")
 if universal_cli:
+    # Homebrew allows url/sha256 only inside on_arm/on_intel, not directly
+    # in on_macos; the universal tarball serves both.
     macos = f'''  on_macos do
-    url "{base}/agasthy-cli-macos-universal.tar.gz"
-    sha256 "{universal_cli}"
+    on_arm do
+      url "{base}/agasthy-cli-macos-universal.tar.gz"
+      sha256 "{universal_cli}"
+    end
+
+    on_intel do
+      url "{base}/agasthy-cli-macos-universal.tar.gz"
+      sha256 "{universal_cli}"
+    end
   end'''
 else:
     macos = f'''  on_macos do

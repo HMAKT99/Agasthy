@@ -32,7 +32,7 @@ https://github.com/user-attachments/assets/2718c8ae-1576-4c4f-a494-646731a019fa
 只想看看 AI 编程助手现在在跑什么、花了多少 token？装命令行工具就够了：
 
 ```bash
-brew install hmakt99/tap/agasthy-cli      # macOS / Linux
+brew trust hmakt99/tap && brew install hmakt99/tap/agasthy-cli      # macOS / Linux
 agasthy agents                            # 正在运行的编程助手会话，以及它们留下的进程
 agasthy usage                             # 最近 30 天的 token 用量和估算费用
 claude mcp add agasthy -- agasthy mcp     # 让 Claude Code 也能查询这台机器（只读）
@@ -130,6 +130,7 @@ curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | s
 或者用 [Homebrew](https://brew.sh)：
 
 ```bash
+brew trust hmakt99/tap                     # 只需一次：Homebrew 7 要求先信任第三方 tap
 brew install --cask hmakt99/tap/agasthy     # 桌面应用
 brew install hmakt99/tap/agasthy-cli        # 可选：给助手用的只读 CLI 和 MCP 服务器
 ```

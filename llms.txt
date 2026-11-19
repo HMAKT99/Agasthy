@@ -8,12 +8,12 @@ Agents can use AGASTHY through `agasthy`, a read-only command-line tool that als
 
 Ask before installing anything. Then:
 
-1. Desktop app (needed for scanned data). On macOS or Linux, the simplest is the one-line installer (checksum-verified, no admin rights, no macOS security prompt): `curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | sh` (add `-s -- --cli` to also install the command-line tool). Or on macOS with Homebrew: `brew install --cask hmakt99/tap/agasthy`. Otherwise download from https://github.com/HMAKT99/Agasthy/releases/latest
+1. Desktop app (needed for scanned data). On macOS or Linux, the simplest is the one-line installer (checksum-verified, no admin rights, no macOS security prompt): `curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | sh` (add `-s -- --cli` to also install the command-line tool). Or on macOS with Homebrew: `brew trust hmakt99/tap && brew install --cask hmakt99/tap/agasthy` (Homebrew 7 needs the one-time `brew trust` for third-party taps). Otherwise download from https://github.com/HMAKT99/Agasthy/releases/latest
    - macOS (Apple silicon): `AGASTHY-<version>-apple-silicon.dmg`. On first launch macOS says it cannot verify the developer; the user allows it once in System Settings > Privacy & Security > Open Anyway.
    - Windows (x64): `AGASTHY_<version>_x64-setup.exe`. SmartScreen warns once: More info > Run anyway.
    - Linux (x64): `AGASTHY_<version>_amd64.AppImage` (chmod +x) or `agasthy_<version>_amd64.deb`.
    The user opens the app and runs a scan from it.
-2. Command-line tool. On macOS or Linux: `curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | sh -s -- --cli-only` (installs `~/.local/bin/agasthy`). With Homebrew (macOS Apple silicon, Linux x64): `brew install hmakt99/tap/agasthy-cli`. Otherwise download the archive for the system from the same release page, verify it against the `.sha256` file next to it, and put `agasthy` on PATH:
+2. Command-line tool. On macOS or Linux: `curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | sh -s -- --cli-only` (installs `~/.local/bin/agasthy`). With Homebrew (macOS, Linux x64 and ARM64): `brew trust hmakt99/tap && brew install hmakt99/tap/agasthy-cli`. Otherwise download the archive for the system from the same release page, verify it against the `.sha256` file next to it, and put `agasthy` on PATH:
    - macOS: `agasthy-cli-macos-aarch64.tar.gz`
    - Linux: `agasthy-cli-linux-x86_64.tar.gz`
    - Windows: `agasthy-cli-windows-x86_64.zip`
