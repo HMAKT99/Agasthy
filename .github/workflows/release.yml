@@ -292,6 +292,14 @@ jobs:
           (cd dist && sha256sum agasthy-cli-linux-aarch64.tar.gz > agasthy-cli-linux-aarch64.tar.gz.sha256)
           mkdir -p check && tar -C check -xzf dist/agasthy-cli-linux-aarch64.tar.gz && ./check/agasthy --version
 
+      # Asahi Linux (Apple silicon, including Omarchy Mac) runs 16 KB pages; a
+      # binary aligned for 4 KB pages cannot load there.
+      - name: Loads on 16 KB-page kernels (Asahi Linux, Omarchy Mac)
+        run: |
+          img=$(ls dist/*_aarch64.AppImage | head -1)
+          (cd "$RUNNER_TEMP" && "$GITHUB_WORKSPACE/$img" --appimage-extract >/dev/null)
+          python3 scripts/check-elf-page-size.py "$img" "$RUNNER_TEMP/squashfs-root" check/agasthy
+
       - uses: actions/upload-artifact@v4
         with:
           name: linux-arm

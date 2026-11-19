@@ -45,3 +45,8 @@ jobs:
           cargo build --release -p agasthy-cli
           ./target/release/agasthy --version
           file target/release/agasthy | grep -i aarch64
+      - name: Loads on 16 KB-page kernels (Asahi Linux, Omarchy Mac)
+        run: |
+          img=$(ls target/release/bundle/appimage/*.AppImage | head -1)
+          (cd "$RUNNER_TEMP" && "$GITHUB_WORKSPACE/$img" --appimage-extract >/dev/null)
+          python3 scripts/check-elf-page-size.py "$img" "$RUNNER_TEMP/squashfs-root" target/release/agasthy target/release/agasthy-desktop
