@@ -258,6 +258,15 @@ pnpm release:mac         # output: dist/AGASTHY-<version>-apple-silicon.dmg
 
 Details: [docs/development.md](docs/development.md).
 
+## Code signing policy
+
+Windows releases will be signed for free through SignPath: free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org). This is being set up. Until it is in place, the Windows installer is unsigned and shows the SmartScreen prompt described under [Install](#install).
+
+- Committers and reviewers: [HMAKT99](https://github.com/HMAKT99). Changes from anyone else are reviewed before they are merged.
+- Approvers: [HMAKT99](https://github.com/HMAKT99). Each signing request is approved by hand.
+- Signed artifacts are built only by GitHub Actions from tagged commits in this repository ([release workflow](.github/workflows/release.yml)).
+- Privacy policy: [docs/privacy.md](docs/privacy.md). There is no telemetry. The only automatic network request is an update check against this repository's Releases, which sends nothing about your machine and can be turned off in Settings → About. Everything else (AI model endpoints, OSV.dev advisory checks) happens only if you turn it on.
+
 ## Privacy
 
 No account, telemetry or analytics. The only network requests: an update check against this repository's Releases (can be turned off; sends nothing about your machine), OSV.dev advisory checks if you turn them on, and an AI model endpoint if you configure one (cloud models need a separate opt-in). Repositories are scanned only in folders you add. External programs run only from an allowlist, with fixed arguments, never through a shell. Full details: [docs/privacy.md](docs/privacy.md).
