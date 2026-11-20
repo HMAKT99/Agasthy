@@ -1,0 +1,45 @@
+name: AUR package check
+
+# Builds and installs packaging/aur/agasthy-bin on real Arch Linux, the way an
+# Omarchy or Manjaro user would with `yay -S agasthy-bin`, and checks that
+# .SRCINFO matches the PKGBUILD (the AUR rejects pushes where it does not).
+
+on:
+  pull_request:
+    paths:
+      - packaging/aur/**
+      - .github/workflows/aur-check.yml
+  workflow_dispatch:
+
+jobs:
+  agasthy-bin:
+    name: agasthy-bin on Arch Linux
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Tools
+        run: pacman -Syu --noconfirm --needed base-devel git namcap
+      - uses: actions/checkout@v4
+      - name: Build and install as a normal user
+        run: |
+          useradd -m builder
+          echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
+          cp -r packaging/aur/agasthy-bin /home/builder/pkg
+          chown -R builder /home/builder/pkg
+          cd /home/builder/pkg
+          sudo -u builder makepkg -si --noconfirm
+      - name: .SRCINFO is current
+        working-directory: /home/builder/pkg
+        run: sudo -u builder makepkg --printsrcinfo | diff -u .SRCINFO -
+      - name: Installed and runs
+        run: |
+          agasthy --version
+          pacman -Ql agasthy-bin | grep -v '/$'
+          test -x /usr/bin/agasthy-desktop
+          test -f /usr/share/applications/AGASTHY.desktop
+          if ldd /usr/bin/agasthy-desktop | grep 'not found'; then exit 1; fi
+      - name: namcap
+        working-directory: /home/builder/pkg
+        run: |
+          namcap PKGBUILD
+          namcap agasthy-bin-*.pkg.tar.zst
