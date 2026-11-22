@@ -1,4 +1,4 @@
-# AGASTHY plugin for Claude Code and Codex
+# AGASTHY plugin for Claude Code, Codex and Cursor
 
 One install gives your agent:
 
@@ -24,5 +24,15 @@ First put the `agasthy` command-line tool on your PATH (see [integrations/mcp](.
 codex plugin marketplace add HMAKT99/Agasthy
 codex plugin add agasthy@agasthy
 ```
+
+**Cursor**
+
+Cursor installs plugins from its marketplace or from a team marketplace. This repository is a Cursor plugin marketplace (`.cursor-plugin/marketplace.json`), so:
+
+- **Teams and Enterprise:** an admin adds it under Dashboard → Plugins & MCPs → Team Marketplaces → Add Marketplace → Import from Repo, with `https://github.com/HMAKT99/Agasthy`. AGASTHY then appears under Customize for everyone on the team.
+- **On your own:** copy this folder to `~/.cursor/plugins/local/agasthy`, then run **Developer: Reload Window**.
+- **MCP server only:** add it to `~/.cursor/mcp.json` as shown in [integrations/mcp](../../integrations/mcp/README.md).
+
+Cursor usually does not inherit your shell's PATH. If the AGASTHY tools do not appear, change `"command": "agasthy"` in `.mcp.json` to the full path, for example `/Users/you/.local/bin/agasthy`.
 
 The skill here is a copy of [`skills/agasthy/SKILL.md`](../../skills/agasthy/SKILL.md); CI keeps them identical.

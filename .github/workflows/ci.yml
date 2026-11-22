@@ -66,7 +66,7 @@ jobs:
         run: |
           cmp skills/agasthy/SKILL.md plugins/agasthy/skills/agasthy/SKILL.md
           v=$(grep -m1 '^version = ' Cargo.toml | cut -d'"' -f2)
-          for f in plugins/agasthy/plugin.json plugins/agasthy/.claude-plugin/plugin.json plugins/agasthy/.codex-plugin/plugin.json integrations/mcp/mcpb/manifest.json gemini-extension.json; do
+          for f in plugins/agasthy/plugin.json plugins/agasthy/.claude-plugin/plugin.json plugins/agasthy/.codex-plugin/plugin.json plugins/agasthy/.cursor-plugin/plugin.json integrations/mcp/mcpb/manifest.json gemini-extension.json; do
             test "$(node -p "require('./$f').version")" = "$v" || { echo "$f version != $v"; exit 1; }
           done
           grep -q "^version: $v$" skills/agasthy/SKILL.md || { echo "SKILL.md version != $v"; exit 1; }

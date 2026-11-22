@@ -1,0 +1,17 @@
+{
+  "name": "agasthy",
+  "owner": {
+    "name": "HMAKT99",
+    "url": "https://github.com/HMAKT99"
+  },
+  "metadata": {
+    "description": "AGASTHY for coding agents: a read-only skill and MCP server with real answers about your developer machine."
+  },
+  "plugins": [
+    {
+      "name": "agasthy",
+      "source": "./plugins/agasthy",
+      "description": "Read-only skill and MCP server: repositories, packages, impact analysis, coding-agent sessions and leftovers, processes and ports, and token usage."
+    }
+  ]
+}
