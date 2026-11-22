@@ -12,7 +12,8 @@ Releases are built by `.github/workflows/release.yml` when a tag `vX.Y.Z` is pus
 ```sh
 # 1. bump the version in apps/desktop/src-tauri/tauri.conf.json, Cargo.toml,
 #    skills/agasthy/SKILL.md, plugins/agasthy/.claude-plugin/plugin.json,
-#    plugins/agasthy/.codex-plugin/plugin.json, plugins/agasthy/plugin.json, integrations/mcp/mcpb/manifest.json
+#    plugins/agasthy/.codex-plugin/plugin.json, plugins/agasthy/.cursor-plugin/plugin.json,
+#    plugins/agasthy/plugin.json, integrations/mcp/mcpb/manifest.json
 #    and gemini-extension.json (CI checks they match), and the CHANGELOG
 # 2. commit, then tag and push
 git tag v0.2.0 && git push origin main v0.2.0

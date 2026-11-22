@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- AGASTHY mark: an "A" drawn as a small graph. Three nodes (machine, project,
+       tool) joined by edges; the crossbar is a dashed, inferred relationship. -->
+  <rect x="64" y="64" width="896" height="896" rx="200" fill="#0E1116"/>
+  <rect x="64.5" y="64.5" width="895" height="895" rx="199.5" fill="none" stroke="#262B33" stroke-width="2"/>
+  <g stroke-linecap="round" fill="none">
+    <path d="M512 262 L318 752" stroke="#E7E9ED" stroke-width="64"/>
+    <path d="M512 262 L706 752" stroke="#E7E9ED" stroke-width="64"/>
+    <path d="M398 590 L626 590" stroke="#F2A93B" stroke-width="40" stroke-dasharray="2 70"/>
+  </g>
+  <circle cx="512" cy="262" r="62" fill="#F2A93B"/>
+  <circle cx="318" cy="752" r="46" fill="#0E1116" stroke="#E7E9ED" stroke-width="28"/>
+  <circle cx="706" cy="752" r="46" fill="#0E1116" stroke="#E7E9ED" stroke-width="28"/>
+</svg>

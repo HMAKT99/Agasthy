@@ -1,0 +1,34 @@
+{
+  "name": "agasthy",
+  "displayName": "AGASTHY",
+  "version": "0.1.10",
+  "description": "Ask your machine with real data: repositories and uncommitted work, runtimes and packages, what breaks if you remove something, live coding-agent sessions and what they left running, processes and ports, and token usage. Read-only skill plus MCP server for AGASTHY.",
+  "author": {
+    "name": "HMAKT99",
+    "url": "https://github.com/HMAKT99"
+  },
+  "homepage": "https://github.com/HMAKT99/Agasthy",
+  "repository": "https://github.com/HMAKT99/Agasthy",
+  "license": "Apache-2.0",
+  "logo": "assets/logo.svg",
+  "keywords": [
+    "developer-tools",
+    "machine",
+    "coding-agents",
+    "mcp",
+    "tokens",
+    "processes",
+    "packages",
+    "read-only"
+  ],
+  "category": "developer-tools",
+  "tags": [
+    "mcp",
+    "coding-agents",
+    "processes",
+    "tokens",
+    "read-only"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json"
+}
