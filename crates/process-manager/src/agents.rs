@@ -186,8 +186,17 @@ pub fn identify(p: &ProcessInfo) -> Option<&'static AgentSignature> {
         .take(3)
         .map(|a| a.replace('\\', "/"))
         .collect();
+    // The script a launcher runs: `node /opt/homebrew/bin/qwen` runs `qwen`.
+    // Global npm installs and npx start agents through such a bin link, whose
+    // path does not contain the package name.
+    let launched = is_launcher(name)
+        .then(|| args.iter().skip(1).find(|a| !a.starts_with('-')))
+        .flatten()
+        .and_then(|a| a.rsplit('/').next());
     AGENTS.iter().find(|a| {
-        a.names.iter().any(|n| name == *n || exe_name == Some(n))
+        a.names
+            .iter()
+            .any(|n| name == *n || exe_name == Some(n) || launched == Some(n))
             // Node/Python launchers: the agent is named in the first few arguments.
             || (is_launcher(name)
                 && args.iter().any(|arg| a.arg_markers.iter().any(|m| arg.contains(m))))
@@ -785,6 +794,53 @@ mod tests {
         assert_eq!(identify(&native).map(|a| a.id), Some("copilot-cli"));
         let plain = proc(12, 1, "node.exe", &[r"C:\code\web\server.js"], 100);
         assert_eq!(identify(&plain).map(|a| a.id), None);
+    }
+
+    #[test]
+    fn identifies_agents_started_through_a_bin_link() {
+        // `npm i -g` / npx: node runs the bin link, not the package path.
+        let cases = [
+            (&["node", "/opt/homebrew/bin/qwen"][..], "qwen-code"),
+            (
+                &["node", "/Users/u/.npm/_npx/1a2b/node_modules/.bin/qwen"][..],
+                "qwen-code",
+            ),
+            (
+                &["node", "--no-warnings", "/usr/local/bin/gemini"][..],
+                "gemini-cli",
+            ),
+            (
+                &["node", "/opt/homebrew/bin/openclaw", "gateway"][..],
+                "openclaw",
+            ),
+            (&["python3", "/Users/u/.local/bin/aider"][..], "aider"),
+        ];
+        for (args, want) in cases {
+            assert_eq!(
+                identify(&proc(10, 1, args[0], args, 100)).map(|a| a.id),
+                Some(want),
+                "{args:?}"
+            );
+        }
+        // The package path still works, and ordinary scripts are not agents.
+        let pkg = [
+            "node",
+            "/opt/homebrew/lib/node_modules/@qwen-code/qwen-code/cli-entry.js",
+        ];
+        assert_eq!(
+            identify(&proc(11, 1, "node", &pkg, 100)).map(|a| a.id),
+            Some("qwen-code")
+        );
+        for args in [
+            &["node", "server.js", "qwen"][..],
+            &["node", "/srv/app/index.js"][..],
+        ] {
+            assert_eq!(
+                identify(&proc(12, 1, "node", args, 100)).map(|a| a.id),
+                None,
+                "{args:?}"
+            );
+        }
     }
 
     #[test]
