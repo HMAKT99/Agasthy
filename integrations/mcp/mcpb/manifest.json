@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "agasthy",
   "display_name": "AGASTHY",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Read-only machine intelligence for coding agents: repos, runtimes, packages, ports, agent sessions and token cost.",
   "long_description": "AGASTHY's read-only MCP server lets coding agents ask about the developer machine with real data: search repositories, applications, runtimes, packages, tools and MCP servers; see what breaks before removing a package or runtime; list live coding-agent sessions and the processes and ports they left running; and read token usage and estimated cost from the agents' own local logs (counters only, never message text). Every tool is read-only. Most queries use the data scanned by the AGASTHY desktop app; processes, telemetry, agents and token usage work without it.",
   "author": { "name": "HMAKT99", "url": "https://github.com/HMAKT99" },
