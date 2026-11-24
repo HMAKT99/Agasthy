@@ -5,7 +5,7 @@
 # Checksums are the ones published next to each release asset.
 
 pkgname=agasthy-bin
-pkgver=0.1.10
+pkgver=0.1.11
 pkgrel=1
 pkgdesc="Maps a developer machine: repos, runtimes, packages, coding agents, MCP servers and what breaks if you remove something"
 arch=('x86_64' 'aarch64')
@@ -27,10 +27,10 @@ source_aarch64=("${_rel}/agasthy_${pkgver}_arm64.deb"
                 "agasthy-cli-${pkgver}-aarch64.tar.gz::${_rel}/agasthy-cli-linux-aarch64.tar.gz")
 noextract=("agasthy_${pkgver}_amd64.deb" "agasthy_${pkgver}_arm64.deb")
 sha256sums=('SKIP')
-sha256sums_x86_64=('9f38af58cd89f34e74aaefa3860cf9522148c4e833a7c9358bda0b964fdc8670'
-                   '44d6a7b8afa09c20b24e8fe3d2d04066ee5a198b7c30c794cef822a5d91c4d7c')
-sha256sums_aarch64=('741e835e5323f055bee9246267b52929d3fc048910a906face152d0a4c0fb40a'
-                    'f11c73a3878656c2c4f799319ebc059d4e12c641b3a69d066d17a12cc4879880')
+sha256sums_x86_64=('2e9515dad88cc319bbceed2e8c6c042381b6571e79454add2ba216ab828f7149'
+                   '072372efcb95851f1bb9c472f90366b7fa706edaf998636bdcb85ffce684aefb')
+sha256sums_aarch64=('21ac613c546a2dadb7fb40141dda426ea4594382cb0fe45925283d3224015992'
+                    '727ca49f8f249e0519e7eb2917e13f9ea58a3985d23ac3f62c29044610fe6c60')
 
 prepare() {
   local _deb

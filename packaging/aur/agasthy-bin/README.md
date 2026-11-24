@@ -22,7 +22,7 @@ git clone ssh://aur@aur.archlinux.org/agasthy-bin.git aur-agasthy-bin
 cp PKGBUILD .SRCINFO aur-agasthy-bin/
 cd aur-agasthy-bin
 git add PKGBUILD .SRCINFO
-git commit -m "agasthy-bin 0.1.10"
+git commit -m "agasthy-bin 0.1.11"
 git push
 ```
 
