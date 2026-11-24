@@ -1,6 +1,6 @@
 {
   "name": "agasthy",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Read-only answers about your developer machine: repos, packages, what breaks if you remove something, ports, coding-agent sessions and token usage. Needs the agasthy CLI on your PATH.",
   "mcpServers": {
     "agasthy": {

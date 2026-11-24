@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.1.11] - 2026-11-24
+
+- **Qwen Code, Gemini CLI and Amp installed with npm are now recognised.** A global npm install or `npx` starts these agents as `node …/bin/qwen`, a path without the package name, so their sessions and the processes they left running were missed. AGASTHY now also matches the script a Node, Bun, Deno or Python launcher runs. Checked against a live Qwen Code 0.28.4 session.
+- **Cursor plugin:** the same read-only skill and MCP server as the Claude Code and Codex plugins, in `plugins/agasthy/.cursor-plugin`. Teams can add this repository as a Cursor team marketplace, or anyone can copy the folder to `~/.cursor/plugins/local/agasthy`.
+- **Security updates:** `url` 2.5.9 (RUSTSEC-2026-0592) and `cookie` 0.18.3 (RUSTSEC-2026-0594). AGASTHY wasn't exposed to either issue; the updates keep dependency audits clean.
+
 ## [0.1.10] - 2026-11-19
 
 - **Arch Linux (pacman), for Omarchy, Manjaro and other Arch-based systems:** packages are read from the local pacman database (`pacman -Qi`, read-only, no network), with descriptions, licences, which ones you installed yourself, and dependencies. Dependencies on virtual names and libraries (`sh`, `libreadline.so`) are resolved to the package that provides them, so "what breaks if I remove it" works for pacman packages. AUR helpers `yay` and `paru` are recognised as tools. Not yet tested on Arch itself; reports welcome.
