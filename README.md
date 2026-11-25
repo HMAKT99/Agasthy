@@ -21,6 +21,8 @@ free disk space safely, and ask plain questions about your machine with evidence
   free and open source · no account · no telemetry
 </p>
 
+<p align="center"><a href="https://glama.ai/mcp/servers/HMAKT99/Agasthy"><img src="https://glama.ai/mcp/servers/HMAKT99/Agasthy/badges/score.svg" alt="HMAKT99/Agasthy MCP server" /></a></p>
+
 <p align="center">Mac or Linux, one line, no security prompt:<br/><code>curl -fsSL https://raw.githubusercontent.com/HMAKT99/Agasthy/main/install.sh | sh</code></p>
 
 https://github.com/user-attachments/assets/2718c8ae-1576-4c4f-a494-646731a019fa
